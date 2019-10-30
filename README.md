@@ -54,7 +54,7 @@ path is /home/myhome/RoboCOP/pkg/robocop/librobocop.so then in config.ini set:
 
 ### Download MNase-seq BAM file -- TO DO
 
-Update path of files in $$config.ini$$.
+Update path of files in config.ini.
 
 ### Running:
 
