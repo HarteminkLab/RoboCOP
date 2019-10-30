@@ -1,0 +1,1 @@
+gcc -g -fPIC -Wall -Wextra -pedantic bc.c algo.c -shared -o librobocop.so

@@ -1,0 +1,9 @@
+*/build/
+*/dist/
+*/robocop.egg.info/
+*/librobocop.so*
+*.pyc
+*nfs00000*
+*__pycache__*
+*dm504*
+.gitignore~
