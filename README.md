@@ -28,23 +28,29 @@ through install.packages() in R console.
 
 Change to RoboCOP directory and install
 
-> cd RoboCOP
-> python setup.py install
-> cd robocop
-> chmod +x gccCompile
-> ./gccCompile # generates shared library librobocop.so
-> ls "`pwd`/librobocop.so" # display absolute path of librobocop.so; copy path
+```
+ cd RoboCOP
+ python setup.py install
+ cd robocop
+ chmod +x gccCompile
+ ./gccCompile # generates shared library librobocop.so
+ ls "`pwd`/librobocop.so" # display absolute path of librobocop.so; copy path
+```
 
 Add path of shared library to your configuration file. Example
 configuration file provided in analysis directory. So from the robocop
 directory:
 
-> cd ../../analysis/
+```
+ cd ../../analysis/
+```
 
 Open file config.ini in an editor and paste path to cshared. For example if
 path is /home/myhome/RoboCOP/pkg/robocop/librobocop.so then in config.ini set
 
-> cshared=/home/myhome/RoboCOP/pkg/robocop/librobocop.so
+```
+ cshared=/home/myhome/RoboCOP/pkg/robocop/librobocop.so
+```
 
 Download MNase-seq BAM file -- TO DO
 
@@ -55,14 +61,18 @@ Update path of files in config.ini.
 Have the path of all configuration files in config.ini. To run RoboCOP on a
 set of genome regions with Baum-Welch update of transition probabilities:
 
-> python robocop_em.py <coordinates file -- example
+```
+python robocop_em.py <coordinates file -- example
   analysis/coordinates.bed> <config file -- example analysis/config.ini>
   <output directory -- OutDir>
+```
 
 It is better to run robocop_em.py on a small set of coordinates and then
 use the learned parameters to perform posterior decoding on larger
 genomic regions.
 
-> python robocop_no_em.py <coordinates file> <config file> <output
+```
+ python robocop_no_em.py <coordinates file> <config file> <output
   directory with learned parameters -- example OutDir> <new output
   directory -- example NewOutDir>
+```
