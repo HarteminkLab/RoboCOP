@@ -1,31 +1,68 @@
-# Multivariate COMPETE
+# RoboCOP (Robotic Chromatin Occupancy)
 ---------------------------------------------------------------------------
-Multivariate model that integrates different kinds of genomics data,
-including DNase-seq, MNase-seq, and [...]
+Multivariate state space model that integrates nucleotide sequence, and
+chromatin accessibility data (currently used only with MNase-seq) to
+compute genome-wide probabilistic occupancy landscape of nucleosomes and transciption
+factors, collectively known as DNA binding factors or DBFs.
 
-Description: TO-DO
+Python Requirements:
+- python 3.6+
+- numpy
+- pandas
+- scipy
+- ctypes
+- roman
+- pysam
+- rpy2
+- biopython
+- matplotlib (only for plotting -- optional)
 
-Requirements:
-- Python 2.7+ (check)
-- Numpy
-- Pandas
-- Scipy
-- Cython
-- roman (a python package)
-- gsl (GNU scientific library)
+R requirement:
+- MASS
+- fitdistrplus
 
-Installation:
-From within the directory multivariate_compete/pkg/ run the following:
-python setup.py install --user
+### Installation:
 
-Configuration: TO-DO
+Python packages can be installed using pip3. R packages can be installed
+through install.packages() in R console.
 
-How to Run: TO-DO
+Change to RoboCOP directory and install
 
-How to Acquire Most Recent Version: TO-DO
+> cd RoboCOP
+> python setup.py install
+> cd robocop
+> chmod +x gccCompile
+> ./gccCompile # generates shared library librobocop.so
+> ls "`pwd`/librobocop.so" # display absolute path of librobocop.so; copy path
 
-How To Submit Bugs or Feature Requests: TO-DO
+Add path of shared library to your configuration file. Example
+configuration file provided in analysis directory. So from the robocop
+directory:
 
-Authors: TO-DO
+> cd ../../analysis/
 
-License: TO-DO
+Open file config.ini in an editor and paste path to cshared. For example if
+path is /home/myhome/RoboCOP/pkg/robocop/librobocop.so then in config.ini set
+
+> cshared=/home/myhome/RoboCOP/pkg/robocop/librobocop.so
+
+Download MNase-seq BAM file -- TO DO
+
+Update path of files in config.ini.
+
+### Running:
+
+Have the path of all configuration files in config.ini. To run RoboCOP on a
+set of genome regions with Baum-Welch update of transition probabilities:
+
+> python robocop_em.py <coordinates file -- example
+  analysis/coordinates.bed> <config file -- example analysis/config.ini>
+  <output directory -- OutDir>
+
+It is better to run robocop_em.py on a small set of coordinates and then
+use the learned parameters to perform posterior decoding on larger
+genomic regions.
+
+> python robocop_no_em.py <coordinates file> <config file> <output
+  directory with learned parameters -- example OutDir> <new output
+  directory -- example NewOutDir>
