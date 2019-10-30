@@ -45,7 +45,7 @@ directory:
  cd ../../analysis/
 ```
 
-Open file $$config.ini$$ in an editor and paste path to cshared. For example if
+Open file $config.ini$ in an editor and paste path to cshared. For example if
 path is $$/home/myhome/RoboCOP/pkg/robocop/librobocop.so$$ then in $$config.ini$$ set
 
 ```
