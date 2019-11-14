@@ -90,6 +90,13 @@ def posterior_forward_backward_wrapper(args):
     robocop.posterior_forward_backward(x, dshared)
     dumpIdx(x, dshared['tmpDir'])
 
+def viterbi_decoding_wrapper(args):
+    (t, dshared) = args
+    x = loadIdx(dshared['tmpDir'], t)
+    robocop.viterbi_decoding(x, dshared)
+    np.save(dshared['tmpDir'] + "viterbi_traceback.idx" + str(x['segment']), x['viterbi_traceback'])
+    np.save(dshared['tmpDir'] + "viterbi_traceback.idx" + str(x['segment']), x['viterbi_table'])
+    
 # create dictionary for each segment
 def createInstance(args):
     (t, dshared) = args

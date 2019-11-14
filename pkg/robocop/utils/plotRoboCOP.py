@@ -42,13 +42,13 @@ if __name__ == '__main__':
     # if outputDir is generated using robocop_no_em.py
     # then use the dir path used to run robocop_no_em.py
     # to get the hmmconfig file
-    hmmconfigfile = "/Users/sneha/compBioBak/robocopTest/HMMconfig.pkl"
-    outDir = "/Users/sneha/compBioBak/robocopTest/"
-    pwmFile = "/Users/sneha/compBioBak/RoboCOP/analysis/motifs_meme.p"
-    idx = 0 # index according to coordinate file
+    hmmconfigfile = "/usr/xtmp/sneha/robocopTest3/HMMconfig.pkl"
+    outDir = "/usr/xtmp/sneha/robocopTest3/"
+    pwmFile = "/usr/xtmp/sneha/RoboCOP/analysis/motifs_meme.p"
+    idx = 12 # index according to coordinate file
     chrm = 1
-    start = 1
-    end = 5000
+    start = 60001
+    end = 65000
     MNaseFile = "/Users/sneha/compBioBak/RoboCOP/analysis/dm504.bam"
     # create file for plotting
     dshared = pickle.load(open(hmmconfigfile, "rb"))

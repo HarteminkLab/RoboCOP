@@ -464,6 +464,64 @@ def posterior_forward_backward(d, dshared, lock = None):
     d['log_likelihood'] = log_fscaling_factor_sum
 
 
+def viterbi_decoding(d, dshared):
+    """
+    Forward backward and posterior decoding.
+    """
+    robocopC = CDLL(dshared["robocopC"])
+    motif_starts = dshared['tf_starts'] 
+    motif_lens = dshared['tf_lens'] 
+    initial_probs = dshared['initial_probs']
+    end_probs = dshared['end_probs']
+    transition_mat = dshared['transition_matrix']
+    data_emission_mat = d['data_emission_matrix']
+    fscaling_factors = np.zeros(dshared['n_obs'])
+    bscaling_factors = np.zeros(dshared['n_obs'])
+    scaling_factors = np.zeros(dshared['n_obs'])
+    parents_mat = np.zeros((dshared['n_states'], dshared['n_states']), dtype = int)
+    n_parents = np.zeros(dshared['n_states'], dtype = int)
+    children_mat = np.zeros((dshared['n_states'], dshared['n_states']), dtype = int)
+    n_children = np.zeros(dshared['n_states'], dtype = int)
+    vtable = np.zeros((dshared['n_obs'], dshared['n_states']))
+    vpointer = np.zeros((dshared['n_obs'], dshared['n_states']))
+    parents_mat = parents_mat.astype(np.long)
+    children_mat = children_mat.astype(np.long)
+    n_parents = n_parents.astype(np.long)
+    n_children = n_children.astype(np.long)
+    transition_mat = transition_mat.astype(np.double)
+    data_emission_mat = data_emission_mat.astype(np.double)
+    initial_probs = initial_probs.astype(np.double)
+    end_probs = end_probs.astype(np.double)
+    vtable = ftable.astype(np.double)
+    vpointer = btable.astype(np.double)
+    fscaling_factors = fscaling_factors.astype(np.double)
+    bscaling_factors = bscaling_factors.astype(np.double)
+    scaling_factors = scaling_factors.astype(np.double)
+    motif_starts = motif_starts.astype(np.long)
+    motif_lens = motif_lens.astype(np.long)
+    
+    robocopC.find_parents_and_children.argtypes = [ndpointer(np.long, flags = "C_CONTIGUOUS"), ndpointer(np.long, flags = "C_CONTIGUOUS"), ndpointer(np.long, flags = "C_CONTIGUOUS"), ndpointer(np.long, flags = "C_CONTIGUOUS"), c_int, c_int, ndpointer(np.double, flags = "C_CONTIGUOUS")]
+    robocopC.find_parents_and_children(parents_mat, children_mat,
+                                         n_parents, n_children, dshared['n_states'],
+                                         dshared['silent_states_begin'], transition_mat)
+
+    # viterbi algorithm
+    robocopC.viterbi.argtypes = [ndpointer(np.double, flags = "C_CONTIGUOUS"), ndpointer(np.double, flags = "C_CONTIGUOUS"), ndpointer(np.double, flags = "C_CONTIGUOUS"), ndpointer(np.double, flags = "C_CONTIGUOUS"), c_int, c_int, c_int, c_int, ndpointer(np.long, flags = "C_CONTIGUOUS"), ndpointer(np.long, flags = "C_CONTIGUOUS"), ndpointer(np.long, flags = "C_CONTIGUOUS"), ndpointer(np.long, flags = "C_CONTIGUOUS"), c_int, c_int, c_int, c_int, ndpointer(np.double, flags = "C_CONTIGUOUS"), ndpointer(np.double, flags = "C_CONTIGUOUS")]
+    robocopC.viterbi(
+        initial_probs,
+        transition_mat, data_emission_mat,
+        end_probs,
+        dshared['n_states'], dshared['silent_states_begin'], dshared['n_obs'], dshared['n_vars'], 
+        parents_mat, n_parents,
+        motif_starts, motif_lens, dshared['n_tfs'],
+        dshared['nuc_present'], dshared['nuc_start'], dshared['nuc_len'],
+        vtable, vpointer
+    )
+    d['viterbi_table'] = vtable
+    d['viterbi_traceback'] = vpointer
+    return 0
+
+
 def center_for_dbf_probs(d, dshared): #, lock = None):
     """
     the length of nucleosome padding is defined here as 0, for now
@@ -641,3 +699,4 @@ def get_segment(d):
 
 def set_segment(d, segment):
     d['segment'] = segment
+
