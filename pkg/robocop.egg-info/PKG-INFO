@@ -1,0 +1,16 @@
+Metadata-Version: 1.1
+Name: robocop
+Version: 0.1.0
+Summary: robocop, a multivariate hidden Markov model designed to infer regulatory protein binding probability along the genome using nucleotide sequence and MNase-seq.
+Home-page: UNKNOWN
+Author: Sneha Mitra and Jianling Zhong
+Author-email: sneha@cs.duke.edu
+License: UNKNOWN
+Description: UNKNOWN
+Platform: UNKNOWN
+Classifier: Development Status :: Alpha
+Classifier: Intended Audience :: Academic
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Topic :: Scientific/Engineering :: Statistics

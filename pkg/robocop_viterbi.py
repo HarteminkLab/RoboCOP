@@ -14,11 +14,11 @@ import gc
 from multiprocessing import Pool, Manager
 
 # create posterior table for each segment
-def createInstances(dshared, mnaseParams, coords, tmpDir, nucleotide_sequence, pool):
+def createInstances(dshared, mnaseParams, coords, cshared, tmpDir, nucleotide_sequence, pool):
     segments = len(coords)
     dshared['tmpDir'] = tmpDir
     dshared['nucleotides'] = nucleotide_sequence
-    
+    dshared['robocopC'] = cshared
     pool.map(createInstance, [(t, dshared) for t in range(segments)])
     if mnaseParams != None: list(map(updateMNaseEMMatNB, [(s, dshared, mnaseParams) for s in range(segments)]))
     pool.map(viterbi_decoding_wrapper, [(t, dshared) for t in range(segments)])
@@ -32,13 +32,14 @@ def runROBOCOP_Viterbi(coordFile, config, outDir, tmpDir, trainOutDir, pool, dna
     fragRange = (fragRangeLong, fragRangeShort)
     nucFile = config.get("main", "nucFile")
     mnaseFiles = config.get("main", "mnaseFile")
+    cshared = config.get("main", "cshared")
     #mnaseFiles = ""
 
     # chromosome segments in data frame
     coords = pandas.read_csv(coordFile, sep = "\t")
 
     # get info from learned model
-    cfg = pickle.load(open(trainOutDir + "/HMMconfig.pkl", "rb"))
+    cfg = pickle.load(open(trainOutDir + "/HMMconfig.pkl", "rb"), encoding = "latin1")
     j = 0
     dbf_conc = {}
     for i in sorted(cfg['tfs']):
@@ -65,12 +66,12 @@ def runROBOCOP_Viterbi(coordFile, config, outDir, tmpDir, trainOutDir, pool, dna
     # get MNase-seq midpoint count parameters
     if mnaseFiles: 
         with open(trainOutDir + "/negParamsMNase.pkl", 'rb') as readFile:
-            mnaseParams = pickle.load(readFile)
+            mnaseParams = pickle.load(readFile, encoding = 'latin1')
     else:
         mnaseParams = None
     
     dshared = cfg
-    createInstances(dshared, mnaseParams, coords, tmpDir, nucleotide_sequence, pool)
+    createInstances(dshared, mnaseParams, coords, cshared, tmpDir, nucleotide_sequence, pool)
     
     # fLike = open(outDir + '/likelihood.txt', 'w')
     # print("Likelihood before EM:", getLogLikelihood(segments, dshared['tmpDir']))
