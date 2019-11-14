@@ -109,7 +109,7 @@ def runROBOCOP_EM(coordFile, config, outDir, tmpDir, pool, dnaseFiles = ""):
 
 if __name__ == '__main__':
         if len(sys.argv) != 4:
-                print("Usage: python em_test_mispoints_onePhi_mnaseMNase.py <coordinate file> <config file> <outputDir>")
+                print("Usage: python robocop_em.py <coordinate file> <config file> <outputDir>")
                 exit(1)
         coordFile = sys.argv[1]
         configFile = sys.argv[2]

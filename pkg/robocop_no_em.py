@@ -84,7 +84,7 @@ def runROBOCOP_NO_EM(coordFile, config, outDir, tmpDir, trainOutDir, pool, dnase
 
 if __name__ == '__main__':
         if len(sys.argv) != 5:
-                print("Usage: python em_test_mispoints_onePhi_mnaseMNase.py <coordinate file> <config file> <trained output dir> <outputDir>")
+                print("Usage: python robocop_no_em.py <coordinate file> <config file> <trained output dir> <outputDir>")
                 exit(1)
         coordFile = sys.argv[1]
         configFile = sys.argv[2]

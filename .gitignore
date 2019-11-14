@@ -2,6 +2,7 @@
 */dist/
 */robocop.egg.info/
 */librobocop.so*
+analysis/working_config.ini
 *.pyc
 *nfs00000*
 *__pycache__*
