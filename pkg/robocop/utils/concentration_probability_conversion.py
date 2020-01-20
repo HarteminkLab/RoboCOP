@@ -50,7 +50,7 @@ def convert_to_prob(dbf_conc, pwm):
             motif_len.append(1)
             motif_conc.append(dbf_conc['background'])
         elif dbf == 'nucleosome':
-            motif_len.append(157)
+            motif_len.append(147)
             motif_conc.append(dbf_conc['nucleosome'])
         elif dbf in pwm:
             motif_len.append(pwm[dbf]['matrix'].shape[1])
@@ -79,7 +79,7 @@ def convert_to_conc(dbf_prob):
         if dbf == 'background':
             dbf_len = 1
         elif dbf == 'nucleosome':
-            dbf_len = 157
+            dbf_len = 147
         elif dbf in pwm:
             dbf_len = pwm[dbf]['matrix'].shape[1]
         else:
