@@ -52,9 +52,11 @@ path is /home/myhome/RoboCOP/pkg/robocop/librobocop.so then in config.ini set:
  cshared=/home/myhome/RoboCOP/pkg/robocop/librobocop.so
 ```
 
-### Download MNase-seq BAM file -- TO DO
+### Download MNase-seq BAM file
 
-Update path of files in config.ini.
+MNase-seq BAM files used in the paper can be downloaded from <https://doi.org/10.7924/r4hx1b43s>.
+
+Update path of mnaseFile in config.ini to the path of the downloaded MNase-seq BAM file.
 
 ### Running:
 
