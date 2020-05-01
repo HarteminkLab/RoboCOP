@@ -64,7 +64,7 @@ Have the path of all configuration files in config.ini. To run RoboCOP on a
 set of genome regions with Baum-Welch update of transition probabilities:
 
 ```
-python robocop_em.py <coordinates file -- example analysis/coordinates.bed> <config file -- example analysis/config.ini> <output directory -- OutDir>
+python robocop_em.py <coordinates file -- example analysis/coordinates.bed> <config file -- example analysis/config.ini> <output directory -- example OutDir>
 ```
 
 It is better to run robocop_em.py on a small set of coordinates and then
