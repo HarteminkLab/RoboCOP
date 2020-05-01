@@ -1,11 +1,11 @@
-# RoboCOP (Robotic Chromatin Occupancy)
+# RoboCOP (Robotic Chromatin Occupancy Profiler)
 ---------------------------------------------------------------------------
-Multivariate state space model that integrates nucleotide sequence, and
+Multivariate state space model that integrates nucleotide sequence and
 chromatin accessibility data (currently used only with MNase-seq) to
-compute genome-wide probabilistic occupancy landscape of nucleosomes and transciption
-factors, collectively known as DNA binding factors or DBFs.
+compute genome-wide probabilistic occupancy landscape of nucleosomes and
+transciption factors (collectively known as DNA-binding factors or DBFs).
 
-Python Requirements:
+Python requirements:
 - python 3.6+
 - numpy
 - pandas
@@ -17,7 +17,7 @@ Python Requirements:
 - biopython
 - matplotlib (only for plotting -- optional)
 
-R requirement:
+R requirements:
 - MASS
 - fitdistrplus
 
