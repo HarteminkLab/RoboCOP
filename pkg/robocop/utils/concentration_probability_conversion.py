@@ -13,15 +13,15 @@ def solve_for_unbound(motif_lens, motif_conc):
     
     max_len = max(motif_lens)
 
-    p = [0] * (max_len+1)
+    polynomial = [0] * (max_len+1)
 
-    p[max_len] = -1
+    polynomial[max_len] = -1
 
     for i in range(len(motif_lens)):
         motif_len = motif_lens[i]
-        p[max_len - motif_len] += motif_conc[i]
+        polynomial[max_len - motif_len] += motif_conc[i]
 
-    unbound_prob = np.roots(p)
+    unbound_prob = np.roots(polynomial)
     unbound_prob = unbound_prob[np.isreal(unbound_prob)]
     unbound_prob = unbound_prob[unbound_prob.real > 0]
     unbound_prob = unbound_prob[unbound_prob.real < 1.0]
@@ -66,6 +66,7 @@ def convert_to_prob(dbf_conc, pwm):
 
     motif_prob = motif_conc * (unbound_prob ** motif_len)
     assert motif_prob.sum() > 1.0 - 1e-5
+    assert motif_prob.sum() < 1.0 + 1e-5
 
     return dict(list(zip(dbfs, motif_prob)))
 
