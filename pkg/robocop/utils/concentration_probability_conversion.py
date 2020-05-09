@@ -38,7 +38,7 @@ def convert_to_prob(dbf_conc, pwm):
     """
     To convert concentration to probabilities, we need to solve the following:
     \sum_i motifConcentration_i * p^{motifLen_i} - 1 = 0
-    where p is the unboud/background transition probability. 
+    where p is the unbound/background transition probability. 
     """
     motif_len = []
     motif_conc = []
