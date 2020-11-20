@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Begin document body -->
+<fimo version="4.12.0" release="Tue Jun 27 16:22:50 2017 -0700">
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation=  xmlns:fimo="http://noble.gs.washington.edu/schema/fimo"
+>
+<command-line>fimo --motif Hcm1_badis /usr/xtmp/sneha/Gordan_2011/motifs_meme.txt slurm-382030.out</command-line>
+<settings>
+<setting name="output directory">fimo_out</setting>
+<setting name="MEME file name">/usr/xtmp/sneha/Gordan_2011/motifs_meme.txt</setting>
+<setting name="sequence file name">slurm-382030.out</setting>
+<setting name="background file name">--nrdb--</setting>
+<setting name="allow clobber">true</setting>
+<setting name="compute q-values">true</setting>
+<setting name="parse genomic coord.">false</setting>
+<setting name="text only">false</setting>
+<setting name="scan both strands">true</setting>
+<setting name="output threshold">0.0001</setting>
+<setting name="threshold type">p-value</setting>
+<setting name="max stored scores">100000</setting>
+<setting name="pseudocount">0.1</setting>
+<setting name="verbosity">2</setting>
+<setting name="selected motif">Hcm1_badis</setting>
+</settings>
+<sequence-data num-sequences="4" num-residues="20000" />
+<alphabet name="DNA" like="dna">
+<letter id="A" symbol="A" complement="T" name="Adenine" colour="CC0000"/>
+<letter id="C" symbol="C" complement="G" name="Cytosine" colour="0000CC"/>
+<letter id="G" symbol="G" complement="C" name="Guanine" colour="FFB300"/>
+<letter id="T" symbol="T" aliases="U" complement="A" name="Thymine" colour="008000"/>
+<letter id="N" symbol="N" aliases="X." equals="ACGT" name="Any base"/>
+<letter id="V" symbol="V" equals="ACG" name="Not T"/>
+<letter id="H" symbol="H" equals="ACT" name="Not G"/>
+<letter id="D" symbol="D" equals="AGT" name="Not C"/>
+<letter id="B" symbol="B" equals="CGT" name="Not A"/>
+<letter id="M" symbol="M" equals="AC" name="Amino"/>
+<letter id="R" symbol="R" equals="AG" name="Purine"/>
+<letter id="W" symbol="W" equals="AT" name="Weak"/>
+<letter id="S" symbol="S" equals="CG" name="Strong"/>
+<letter id="Y" symbol="Y" equals="CT" name="Pyrimidine"/>
+<letter id="K" symbol="K" equals="GT" name="Keto"/>
+</alphabet>
+<motif name="Abf1_murphy" alt="Abf1_murphy" width="14" best-possible-match="ATCACATGGCACGA"/>
+<motif name="Abf2_badis" alt="Abf2_badis" width="6" best-possible-match="TCTAGA"/>
+<motif name="Ace2_badis" alt="Ace2_badis" width="9" best-possible-match="AACCAGCAC"/>
+<motif name="Adr1_badis" alt="Adr1_badis" width="6" best-possible-match="CCCCAC"/>
+<motif name="Aft1_zhu" alt="Aft1_zhu" width="10" best-possible-match="TATTGCACCC"/>
+<motif name="Aft2_badis" alt="Aft2_badis" width="6" best-possible-match="ACACCC"/>
+<motif name="Aro80_zhu" alt="Aro80_zhu" width="8" best-possible-match="CTCGGCAA"/>
+<motif name="Asg1_zhu" alt="Asg1_zhu" width="15" best-possible-match="CCGGCCGAGTTCCGG"/>
+<motif name="Azf1_badis" alt="Azf1_badis" width="9" best-possible-match="AAAAAGAAA"/>
+<motif name="Bas1_zhu" alt="Bas1_zhu" width="12" best-possible-match="AGCCAGAGTCAA"/>
+<motif name="Cad1_murphy" alt="Cad1_murphy" width="11" best-possible-match="GATTAGTAATC"/>
+<motif name="Cat8_badis" alt="Cat8_badis" width="5" best-possible-match="CCGGA"/>
+<motif name="Cbf1_zhu" alt="Cbf1_zhu" width="6" best-possible-match="CACGTG"/>
+<motif name="Cep3_badis" alt="Cep3_badis" width="7" best-possible-match="CTCGGAA"/>
+<motif name="Cha4_zhu" alt="Cha4_zhu" width="9" best-possible-match="ATCTCCGCC"/>
+<motif name="Cin5_murphy" alt="Cin5_murphy" width="11" best-possible-match="ATTACGTAAGC"/>
+<motif name="Crz1_badis" alt="Crz1_badis" width="13" best-possible-match="ACTAAGCCACCCT"/>
+<motif name="Cst6_murphy" alt="Cst6_murphy" width="10" best-possible-match="ATGACGTCAT"/>
+<motif name="Cup9_badis" alt="Cup9_badis" width="11" best-possible-match="AATGTGTCAAA"/>
+<motif name="Dal80_badis" alt="Dal80_badis" width="7" best-possible-match="CGATAAG"/>
+<motif name="Dal82_badis" alt="Dal82_badis" width="10" best-possible-match="AAATCTGCGC"/>
+<motif name="Ecm22_murphy" alt="Ecm22_murphy" width="10" best-possible-match="CCTCGTATAA"/>
+<motif name="Ecm23_badis" alt="Ecm23_badis" width="11" best-possible-match="AGATCTTGATA"/>
+<motif name="Fhl1_zhu" alt="Fhl1_zhu" width="8" best-possible-match="GACGCAAA"/>
+<motif name="Fkh1_zhu" alt="Fkh1_zhu" width="10" best-possible-match="TGTAAACAAA"/>
+<motif name="Fkh2_zhu" alt="Fkh2_zhu" width="9" best-possible-match="GTAAACAAA"/>
+<motif name="Fzf1_badis" alt="Fzf1_badis" width="6" best-possible-match="CTATCA"/>
+<motif name="Gal4_zhu" alt="Gal4_zhu" width="19" best-possible-match="TCGGGAAAAAAAAAACCGA"/>
+<motif name="Gat1_zhu" alt="Gat1_zhu" width="9" best-possible-match="CCTTATCGG"/>
+<motif name="Gat3_zhu" alt="Gat3_zhu" width="9" best-possible-match="AGATCTACA"/>
+<motif name="Gat4_zhu" alt="Gat4_zhu" width="8" best-possible-match="TAGATCTA"/>
+<motif name="Gcn4_zhu" alt="Gcn4_zhu" width="9" best-possible-match="ATGAGTCAT"/>
+<motif name="Gcr1_murphy" alt="Gcr1_murphy" width="12" best-possible-match="TAGAGGAAGCCG"/>
+<motif name="Gis1_badis" alt="Gis1_badis" width="7" best-possible-match="CCCCTAA"/>
+<motif name="Gln3_badis" alt="Gln3_badis" width="7" best-possible-match="CTTATCA"/>
+<motif name="Gsm1_zhu" alt="Gsm1_zhu" width="10" best-possible-match="AAACTCCGGA"/>
+<motif name="Gzf3_zhu" alt="Gzf3_zhu" width="9" best-possible-match="CTGATAAGG"/>
+<motif name="Hac1_badis" alt="Hac1_badis" width="7" best-possible-match="GACACGT"/>
+<motif name="Hal9_zhu" alt="Hal9_zhu" width="18" best-possible-match="TCCGAAAAAAAAAGCGGA"/>
+<motif name="Hap1_murphy" alt="Hap1_murphy" width="13" best-possible-match="CCGATAACTCCGG"/>
+<motif name="Hcm1_badis" alt="Hcm1_badis" width="8" best-possible-match="GTAAACAA"/>
+<motif name="Hmlalpha2_murphy" alt="Hmlalpha2_murphy" width="8" best-possible-match="ATTACACG"/>
+<motif name="Hmra2_badis" alt="Hmra2_badis" width="8" best-possible-match="ATTACATG"/>
+<motif name="Hsf1_badis" alt="Hsf1_badis" width="7" best-possible-match="ATGGAAC"/>
+<motif name="Leu3_zhu" alt="Leu3_zhu" width="9" best-possible-match="ACCGGCGAA"/>
+<motif name="Lys14_zhu" alt="Lys14_zhu" width="9" best-possible-match="AAATTCCGG"/>
+<motif name="Matalpha2_zhu" alt="Matalpha2_zhu" width="8" best-possible-match="AACAATAG"/>
+<motif name="Mbp1_zhu" alt="Mbp1_zhu" width="9" best-possible-match="GACGCGTCA"/>
+<motif name="Mcm1_zhu" alt="Mcm1_zhu" width="13" best-possible-match="TTCCCAATTCGGA"/>
+<motif name="Met31_badis" alt="Met31_badis" width="10" best-possible-match="GCTGTGGCGC"/>
+<motif name="Met32_badis" alt="Met32_badis" width="6" best-possible-match="GCCACA"/>
+<motif name="Mga1_zhu" alt="Mga1_zhu" width="7" best-possible-match="AGAACAC"/>
+<motif name="Mig1_zhu" alt="Mig1_zhu" width="11" best-possible-match="AATGCGGGGGA"/>
+<motif name="Mig2_zhu" alt="Mig2_zhu" width="11" best-possible-match="TACCCCGCAAT"/>
+<motif name="Mig3_zhu" alt="Mig3_zhu" width="11" best-possible-match="TACCCCGCATT"/>
+<motif name="Mot3_murphy" alt="Mot3_murphy" width="9" best-possible-match="GCAGGCACG"/>
+<motif name="Msn1_murphy" alt="Msn1_murphy" width="11" best-possible-match="ATTTGTCCTTA"/>
+<motif name="Msn2_badis" alt="Msn2_badis" width="5" best-possible-match="AGGGG"/>
+<motif name="Msn4_badis" alt="Msn4_badis" width="5" best-possible-match="AGGGG"/>
+<motif name="Ndt80_zhu" alt="Ndt80_zhu" width="9" best-possible-match="GCCACAAAA"/>
+<motif name="Nhp10_badis" alt="Nhp10_badis" width="8" best-possible-match="GCCGGGGA"/>
+<motif name="Nhp6a_zhu" alt="Nhp6a_zhu" width="7" best-possible-match="TATATAA"/>
+<motif name="Nhp6b_zhu" alt="Nhp6b_zhu" width="8" best-possible-match="TATATATA"/>
+<motif name="Nrg1_zhu" alt="Nrg1_zhu" width="9" best-possible-match="CAGGGTCCA"/>
+<motif name="Nrg2_murphy" alt="Nrg2_murphy" width="8" best-possible-match="AAGGGTCC"/>
+<motif name="Oaf1_badis" alt="Oaf1_badis" width="8" best-possible-match="CGGAGATA"/>
+<motif name="Pbf1_zhu" alt="Pbf1_zhu" width="10" best-possible-match="AGCTCATCGC"/>
+<motif name="Pbf2_zhu" alt="Pbf2_zhu" width="10" best-possible-match="ACCTCATCGC"/>
+<motif name="Pdr1_badis" alt="Pdr1_badis" width="7" best-possible-match="CCGCGGA"/>
+<motif name="Pdr3_murphy" alt="Pdr3_murphy" width="10" best-possible-match="ATCCGCGGAA"/>
+<motif name="Pdr8_badis" alt="Pdr8_badis" width="7" best-possible-match="CGGAGAT"/>
+<motif name="Phd1_zhu" alt="Phd1_zhu" width="9" best-possible-match="CATGCATCA"/>
+<motif name="Pho2_badis" alt="Pho2_badis" width="8" best-possible-match="TAATTTAA"/>
+<motif name="Pho4_zhu" alt="Pho4_zhu" width="8" best-possible-match="GCACGTGC"/>
+<motif name="Put3_badis" alt="Put3_badis" width="6" best-possible-match="CCCGGG"/>
+<motif name="Rap1_zhu" alt="Rap1_zhu" width="10" best-possible-match="GGGTGTACGG"/>
+<motif name="Rdr1_zhu" alt="Rdr1_zhu" width="7" best-possible-match="GCGGATA"/>
+<motif name="Rds1_zhu" alt="Rds1_zhu" width="8" best-possible-match="TCGGCCGA"/>
+<motif name="Rds2_badis" alt="Rds2_badis" width="6" best-possible-match="TCGGGG"/>
+<motif name="Reb1_badis" alt="Reb1_badis" width="8" best-possible-match="GTTACCCG"/>
+<motif name="Rei1_badis" alt="Rei1_badis" width="7" best-possible-match="CCCCTGA"/>
+<motif name="Rfx1_badis" alt="Rfx1_badis" width="7" best-possible-match="GTTGCTA"/>
+<motif name="Rgm1_badis" alt="Rgm1_badis" width="9" best-possible-match="TACCCCTGA"/>
+<motif name="Rgt1_badis" alt="Rgt1_badis" width="8" best-possible-match="TTTTTCCG"/>
+<motif name="Rim101_badis" alt="Rim101_badis" width="7" best-possible-match="CGCCAAG"/>
+<motif name="Rox1_badis" alt="Rox1_badis" width="5" best-possible-match="ACAAT"/>
+<motif name="Rph1_badis" alt="Rph1_badis" width="9" best-possible-match="CACCCCTAA"/>
+<motif name="Rpn4_badis" alt="Rpn4_badis" width="7" best-possible-match="GGTGGCG"/>
+<motif name="Rsc3_zhu" alt="Rsc3_zhu" width="8" best-possible-match="CGCGCGCT"/>
+<motif name="Rsc30_zhu" alt="Rsc30_zhu" width="10" best-possible-match="CGCGCGCGCG"/>
+<motif name="Rtg3_zhu" alt="Rtg3_zhu" width="8" best-possible-match="GCACGTGC"/>
+<motif name="Sfl1_zhu" alt="Sfl1_zhu" width="10" best-possible-match="ATAGAAGAAA"/>
+<motif name="Sfp1_zhu" alt="Sfp1_zhu" width="10" best-possible-match="AAAAAATTTT"/>
+<motif name="Sig1_badis" alt="Sig1_badis" width="5" best-possible-match="ATATA"/>
+<motif name="Sip4_badis" alt="Sip4_badis" width="7" best-possible-match="CTCCGGA"/>
+<motif name="Skn7_badis" alt="Skn7_badis" width="8" best-possible-match="GGCCGGCC"/>
+<motif name="Sko1_murphy" alt="Sko1_murphy" width="8" best-possible-match="ATGACGTA"/>
+<motif name="Smp1_zhu" alt="Smp1_zhu" width="13" best-possible-match="ACCTATAATTAAA"/>
+<motif name="Sok2_badis" alt="Sok2_badis" width="8" best-possible-match="CCTGCAGG"/>
+<motif name="Spt15_zhu" alt="Spt15_zhu" width="9" best-possible-match="TATATATAT"/>
+<motif name="Srd1_badis" alt="Srd1_badis" width="6" best-possible-match="AGATCT"/>
+<motif name="Stb3_zhu" alt="Stb3_zhu" width="11" best-possible-match="AATTTTTCACT"/>
+<motif name="Stb4_murphy" alt="Stb4_murphy" width="8" best-possible-match="TATCCGAA"/>
+<motif name="Stb5_murphy" alt="Stb5_murphy" width="10" best-possible-match="CGGGGTTATA"/>
+<motif name="Ste12_murphy" alt="Ste12_murphy" width="8" best-possible-match="ATGAAACA"/>
+<motif name="Stp1_murphy" alt="Stp1_murphy" width="9" best-possible-match="GCGCCGTAC"/>
+<motif name="Stp2_zhu" alt="Stp2_zhu" width="9" best-possible-match="GGCGCCGCA"/>
+<motif name="Stp3_badis" alt="Stp3_badis" width="8" best-possible-match="CGCTAGCG"/>
+<motif name="Stp4_zhu" alt="Stp4_zhu" width="10" best-possible-match="GTGCGGCTGA"/>
+<motif name="Sum1_zhu" alt="Sum1_zhu" width="8" best-possible-match="AATTAATT"/>
+<motif name="Sut1_murphy" alt="Sut1_murphy" width="10" best-possible-match="AAACTCCGAG"/>
+<motif name="Sut2_zhu" alt="Sut2_zhu" width="10" best-possible-match="AAACTCCGAA"/>
+<motif name="Swi4_badis" alt="Swi4_badis" width="8" best-possible-match="ACGCGAAA"/>
+<motif name="Swi5_badis" alt="Swi5_badis" width="7" best-possible-match="TGCTGGT"/>
+<motif name="Tbf1_zhu" alt="Tbf1_zhu" width="8" best-possible-match="AACCCTAA"/>
+<motif name="Tbs1_zhu" alt="Tbs1_zhu" width="10" best-possible-match="GCGGATCCGC"/>
+<motif name="Tea1_zhu" alt="Tea1_zhu" width="12" best-possible-match="TGCGGAAATTAA"/>
+<motif name="Tec1_badis" alt="Tec1_badis" width="7" best-possible-match="ACATTCC"/>
+<motif name="Tos8_badis" alt="Tos8_badis" width="6" best-possible-match="TGTCAA"/>
+<motif name="Tye7_zhu" alt="Tye7_zhu" width="10" best-possible-match="ATCACGTGAT"/>
+<motif name="Uga3_badis" alt="Uga3_badis" width="7" best-possible-match="GGCGGGA"/>
+<motif name="Ume6_zhu" alt="Ume6_zhu" width="8" best-possible-match="GGCGGCTA"/>
+<motif name="Upc2_murphy" alt="Upc2_murphy" width="9" best-possible-match="CTCGTATAG"/>
+<motif name="Usv1_zhu" alt="Usv1_zhu" width="10" best-possible-match="TCCCCCTGAA"/>
+<motif name="Vhr1_murphy" alt="Vhr1_murphy" width="10" best-possible-match="GGTGACTCAC"/>
+<motif name="Xbp1_badis" alt="Xbp1_badis" width="6" best-possible-match="CTCGAG"/>
+<motif name="Yap1_zhu" alt="Yap1_zhu" width="10" best-possible-match="CTTACGTAAG"/>
+<motif name="Yap3_murphy" alt="Yap3_murphy" width="10" best-possible-match="ATTACGTAAT"/>
+<motif name="Yap6_zhu" alt="Yap6_zhu" width="10" best-possible-match="GATTACGTAA"/>
+<motif name="Ybr033w_murphy" alt="Ybr033w_murphy" width="11" best-possible-match="CCGGAAAAACT"/>
+<motif name="Ybr239c_zhu" alt="Ybr239c_zhu" width="9" best-possible-match="TTCCGGAAC"/>
+<motif name="Ydr520c_badis" alt="Ydr520c_badis" width="10" best-possible-match="CCGGAGATAT"/>
+<motif name="Yer064c_murphy" alt="Yer064c_murphy" width="10" best-possible-match="GATGACTCAT"/>
+<motif name="Yer130c_badis" alt="Yer130c_badis" width="10" best-possible-match="ATATAGGGGT"/>
+<motif name="Yer184c_murphy" alt="Yer184c_murphy" width="9" best-possible-match="ACCGGCCGG"/>
+<motif name="Ygr067c_badis" alt="Ygr067c_badis" width="8" best-possible-match="GCGGGGTA"/>
+<motif name="Ykl222c_zhu" alt="Ykl222c_zhu" width="11" best-possible-match="AACGGAAATAA"/>
+<motif name="Yll054c_zhu" alt="Yll054c_zhu" width="18" best-possible-match="TCCGTAAAAAAAAACGGA"/>
+<motif name="Ylr278c_murphy" alt="Ylr278c_murphy" width="9" best-possible-match="AAACTCCGG"/>
+<motif name="Yml081w_zhu" alt="Yml081w_zhu" width="9" best-possible-match="TACCCCGCA"/>
+<motif name="Ynr063w_badis" alt="Ynr063w_badis" width="8" best-possible-match="TCGGAGAT"/>
+<motif name="Yox1_badis" alt="Yox1_badis" width="7" best-possible-match="TTAATTA"/>
+<motif name="Ypr013c_zhu" alt="Ypr013c_zhu" width="9" best-possible-match="CGTAAATCA"/>
+<motif name="Ypr015c_zhu" alt="Ypr015c_zhu" width="11" best-possible-match="ACGTAAATCCT"/>
+<motif name="Ypr022c_badis" alt="Ypr022c_badis" width="6" best-possible-match="CCCCAC"/>
+<motif name="Ypr196w_badis" alt="Ypr196w_badis" width="11" best-possible-match="AATTTCTCCGA"/>
+<motif name="Yrm1_badis" alt="Yrm1_badis" width="7" best-possible-match="CGGAAAT"/>
+<motif name="Yrr1_zhu" alt="Yrr1_zhu" width="10" best-possible-match="GCGGAAATAA"/>
+<motif name="Zap1_murphy" alt="Zap1_murphy" width="12" best-possible-match="ACCCTAAGGGTT"/>
+<motif name="Zms1_badis" alt="Zms1_badis" width="9" best-possible-match="AGCGGGGTA"/>
+<motif name="Cad1_secondary_murphy" alt="Cad1_secondary_murphy" width="9" best-possible-match="ATTACGTAA"/>
+<motif name="Cst6_secondary_murphy" alt="Cst6_secondary_murphy" width="10" best-possible-match="ATGACGTGTA"/>
+<motif name="Ecm22_secondary_murphy" alt="Ecm22_secondary_murphy" width="8" best-possible-match="AGGAACGA"/>
+<motif name="Gat1_secondary_zhu" alt="Gat1_secondary_zhu" width="8" best-possible-match="ATAGATAA"/>
+<motif name="Gat3_secondary_zhu" alt="Gat3_secondary_zhu" width="7" best-possible-match="GATCTTG"/>
+<motif name="Gcn4_secondary_zhu" alt="Gcn4_secondary_zhu" width="11" best-possible-match="ATGACGTCATC"/>
+<motif name="Hap1_secondary_murphy" alt="Hap1_secondary_murphy" width="8" best-possible-match="TCGGCCGA"/>
+<motif name="Hmlalpha2_secondary_murphy" alt="Hmlalpha2_secondary_murphy" width="8" best-possible-match="CATGTTGA"/>
+<motif name="Leu3_secondary_zhu" alt="Leu3_secondary_zhu" width="18" best-possible-match="GGGGCCGTATCCGGCCCT"/>
+<motif name="Lys14_secondary_zhu" alt="Lys14_secondary_zhu" width="16" best-possible-match="ATTCCAGGGGAAAGAA"/>
+<motif name="Mga1_secondary_zhu" alt="Mga1_secondary_zhu" width="7" best-possible-match="AGAAGCA"/>
+<motif name="Mig2_secondary_zhu" alt="Mig2_secondary_zhu" width="12" best-possible-match="CCGAACGGGGAA"/>
+<motif name="Mot3_secondary_murphy" alt="Mot3_secondary_murphy" width="8" best-possible-match="ATTACATA"/>
+<motif name="Msn1_secondary_murphy" alt="Msn1_secondary_murphy" width="11" best-possible-match="GAATGTCCAAG"/>
+<motif name="Pbf1_secondary_zhu" alt="Pbf1_secondary_zhu" width="8" best-possible-match="GCGATGGA"/>
+<motif name="Pbf2_secondary_zhu" alt="Pbf2_secondary_zhu" width="8" best-possible-match="GCGATGGA"/>
+<motif name="Pdr3_secondary_murphy" alt="Pdr3_secondary_murphy" width="10" best-possible-match="TTCCGGAATC"/>
+<motif name="Pho4_secondary_zhu" alt="Pho4_secondary_zhu" width="9" best-possible-match="TCACGTGAC"/>
+<motif name="Rds1_secondary_zhu" alt="Rds1_secondary_zhu" width="9" best-possible-match="ATCTCCGCA"/>
+<motif name="Rgm1_secondary_badis" alt="Rgm1_secondary_badis" width="9" best-possible-match="GGTGCCTGA"/>
+<motif name="Sko1_secondary_murphy" alt="Sko1_secondary_murphy" width="8" best-possible-match="TGACGTCA"/>
+<motif name="Stb3_secondary_zhu" alt="Stb3_secondary_zhu" width="8" best-possible-match="GAATTTCA"/>
+<motif name="Stb4_secondary_murphy" alt="Stb4_secondary_murphy" width="9" best-possible-match="TCGGGCCGA"/>
+<motif name="Stb5_secondary_murphy" alt="Stb5_secondary_murphy" width="9" best-possible-match="ATAGTGCCG"/>
+<motif name="Stp4_secondary_zhu" alt="Stp4_secondary_zhu" width="13" best-possible-match="AAGCGGCGCTATG"/>
+<motif name="Tbf1_secondary_zhu" alt="Tbf1_secondary_zhu" width="8" best-possible-match="CATACCTA"/>
+<motif name="Tbs1_secondary_zhu" alt="Tbs1_secondary_zhu" width="10" best-possible-match="TCCGCACGGA"/>
+<motif name="Tea1_secondary_zhu" alt="Tea1_secondary_zhu" width="16" best-possible-match="CGGAAAAAAAAATCCG"/>
+<motif name="Tye7_secondary_zhu" alt="Tye7_secondary_zhu" width="11" best-possible-match="CATCACACCAC"/>
+<motif name="Ume6_secondary_zhu" alt="Ume6_secondary_zhu" width="8" best-possible-match="AGCGCGCT"/>
+<motif name="Upc2_secondary_murphy" alt="Upc2_secondary_murphy" width="7" best-possible-match="GGAACGA"/>
+<motif name="Usv1_secondary_zhu" alt="Usv1_secondary_zhu" width="9" best-possible-match="GGTACCTGA"/>
+<motif name="Yap1_secondary_zhu" alt="Yap1_secondary_zhu" width="9" best-possible-match="ATTACTAAG"/>
+<motif name="Yap3_secondary_murphy" alt="Yap3_secondary_murphy" width="9" best-possible-match="ATTACTAAT"/>
+<motif name="Ybr239c_secondary_zhu" alt="Ybr239c_secondary_zhu" width="9" best-possible-match="AATCGGAAC"/>
+<motif name="Yer064c_secondary_murphy" alt="Yer064c_secondary_murphy" width="12" best-possible-match="ATGACTACACGC"/>
+<motif name="Ylr278c_secondary_murphy" alt="Ylr278c_secondary_murphy" width="9" best-possible-match="CGGAGTCCG"/>
+<motif name="Yml081w_secondary_zhu" alt="Yml081w_secondary_zhu" width="7" best-possible-match="GAGGGGA"/>
+<motif name="Zap1_secondary_murphy" alt="Zap1_secondary_murphy" width="6" best-possible-match="GGTTAT"/>
+<background source="--nrdb--">
+<value letter="A">0.275</value>
+<value letter="C">0.225</value>
+<value letter="G">0.225</value>
+<value letter="T">0.275</value>
+</background>
+<cisml-file>cisml.xml</cisml-file>
+</fimo>

@@ -208,14 +208,15 @@ int bward(
     return 0;
 }
 
-double calc_sr(double *sf, double *sb, int len, double *sr) {
+double calc_sr(double *sf, double *sb, int len, long double *sr) {
   int i;
   double log_sf_sum  = 0;
 
   sr[len - 1] = 1;
 //  sr[len - 1] = log(1);
   for (i = len - 1; i > 0; i--) {
-    sr[i - 1] = sr[i] * sb[i] / sf[i];
+    //printf("sf:%lf, sb:%lf, sr:%LF\n", sf[i], sb[i], sr[i]);
+    sr[i - 1] = sr[i] / sf[i] * sb[i] ;
     log_sf_sum += log(sf[i]);
 //    sr[i - 1] = sr[i] + log(sb[i]) - log(sf[i]);
   }
@@ -227,7 +228,7 @@ double calc_sr(double *sf, double *sb, int len, double *sr) {
 
 void posterior_decoding(
     double *f_table, double *b_table, 
-    double *sb, double *sr, 
+    double *sb, long double *sr, 
     int n_states, int n_obs,
     // output
     double* posterior_table

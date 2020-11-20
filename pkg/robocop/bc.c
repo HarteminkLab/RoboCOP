@@ -121,6 +121,7 @@ int build_emission_mat_from_pwm(
     for(i = 0; i < n_obs; i++) {
         for(j = 0; j < silent_states_begin; j++) {
             emission_mat[I(i, j, n_states)] = pwm[j * alphabet_length + sequence[i]];
+	    //if(emission_mat[I(i, j, n_states)] == 0) printf("%d, %d, %lf, %lf, %ld\n", i, j, emission_mat[I(i, j, n_states)], pwm[j * alphabet_length + sequence[i]], sequence[i]);
         }
         for(j = silent_states_begin; j < n_states; j++) {
             emission_mat[I(i, j, n_states)] = 1.0;

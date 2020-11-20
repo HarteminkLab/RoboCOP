@@ -1,0 +1,13 @@
+# motif_id	motif_alt_id	sequence_name	start	stop	strand	score	p-value	q-value	matched_sequence
+Hcm1_badis	Hcm1_badis	FKH2	4750	4757	+	14.1371	2.18e-05	0.202	GTAAACAA
+Hcm1_badis	Hcm1_badis	FKH2	2510	2517	-	14.1371	2.18e-05	0.202	GTAAACAA
+Hcm1_badis	Hcm1_badis	FKH1	2554	2561	-	14.1371	2.18e-05	0.202	GTAAACAA
+Hcm1_badis	Hcm1_badis	NDD1	2635	2642	-	14.1371	2.18e-05	0.202	GTAAACAA
+Hcm1_badis	Hcm1_badis	FKH2	425	432	-	11.8145	4.83e-05	0.202	ATAAACAA
+Hcm1_badis	Hcm1_badis	FKH1	835	842	-	11.8145	4.83e-05	0.202	ATAAACAA
+Hcm1_badis	Hcm1_badis	FKH1	2532	2539	-	11.8145	4.83e-05	0.202	ATAAACAA
+Hcm1_badis	Hcm1_badis	YHP1	2619	2626	+	11.8145	4.83e-05	0.202	ATAAACAA
+Hcm1_badis	Hcm1_badis	FKH2	4803	4810	+	11.8145	4.83e-05	0.202	ATAAACAA
+Hcm1_badis	Hcm1_badis	FKH1	1277	1284	-	11.5161	6.62e-05	0.208	GTCAACAA
+Hcm1_badis	Hcm1_badis	NDD1	1794	1801	-	11.5161	6.62e-05	0.208	GTCAACAA
+Hcm1_badis	Hcm1_badis	FKH2	3783	3790	+	11.5161	6.62e-05	0.208	GTCAACAA

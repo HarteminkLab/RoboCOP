@@ -29,11 +29,11 @@ def visualize_dbf_color_map(dbf_color_map):
 
 def preprocess_occupancy_profile(op, drop_threshold):
     '''process occupancy profile before plotting'''
-    tfs = [x for x in list(op) if x != "nucleosome" and x != "nuc_start" and x != "nuc_center" and x != "unknown_TF" and x != "background" and x != "nuc_padding" and x != "nuc_end"]
+    tfs = [x for x in list(op) if x != "nucleosome" and x != "nuc_start" and x != "nuc_center" and x != "unknown" and x != "background" and x != "nuc_padding" and x != "nuc_end"]
     combinedTFs = list(set([(x.split("_")[0]).upper() for x in tfs]))
-    newOP = pd.DataFrame(columns = combinedTFs + ["nucleosome", "nuc_start", "nuc_center", "unknown_TF", "coordinate"])
-    if "unknown_TF" in list(op): newOP["unknown_TF"] = op["unknown_TF"]
-    else: newOP["unknown_TF"] = [0 for i in range(len(op))]
+    newOP = pd.DataFrame(columns = combinedTFs + ["nucleosome", "nuc_start", "nuc_center", "unknown", "coordinate"])
+    if "unknown" in list(op): newOP["unknown"] = op["unknown"]
+    else: newOP["unknown"] = [0 for i in range(len(op))]
     newOP["nucleosome"] = op["nucleosome"]
     newOP["nuc_start"] = op["nuc_start"]
     newOP["nuc_center"] = op["nuc_center"]
@@ -75,20 +75,43 @@ def plot_dbf_binding(op, dbf_color_map, nucDyad, ax):
             ax.fill_between(op.coordinate, op.loc[:, 'nucleosome'], color = dbf_color_map['nucleosome'])
 
 
-    # plot unknown TF first
-    dbf = 'unknown_TF'
+    # plot unknown first
+    dbf = 'unknown'
     if dbf in list(op):
         ax.plot(op.coordinate, op.loc[:, dbf], color = dbf_color_map[dbf], label = dbf, alpha = 0.5)
         ax.fill_between(op.coordinate, op.loc[:, dbf], color = dbf_color_map[dbf], alpha = 0.5)
-    
+
+    # then plot Azf1
+    dbf = 'AZF1'
+    if dbf in list(op):
+        ax.plot(op.coordinate, op.loc[:, dbf], color = dbf_color_map[dbf], label = dbf)
+        ax.fill_between(op.coordinate, op.loc[:, dbf], color = dbf_color_map[dbf])
+
+    # dbf = 'YLL054C'
+    # if dbf in list(op):
+    #     ax.plot(op.coordinate, op.loc[:, dbf], color = dbf_color_map[dbf], label = dbf)
+    #     ax.fill_between(op.coordinate, op.loc[:, dbf], color = dbf_color_map[dbf])
+
+    # dbf = 'HAL9'
+    # if dbf in list(op):
+    #     ax.plot(op.coordinate, op.loc[:, dbf], color = dbf_color_map[dbf], label = dbf)
+    #     ax.fill_between(op.coordinate, op.loc[:, dbf], color = dbf_color_map[dbf])
+
+    print(list(op))
     #plot all other dbfs
     for dbf in dbfs:
-        if dbf == 'unknown_TF': continue
+        if dbf == 'unknown' or dbf == 'AZF1' or dbf == 'PDR3': continue
         if dbf not in list(op): continue
         if dbf not in list(dbf_color_map): continue
         ax.plot(op.coordinate, op.loc[:, dbf], color = dbf_color_map[dbf], label = dbf)
         ax.fill_between(op.coordinate, op.loc[:, dbf], color = dbf_color_map[dbf])
 
+    # then plot Azf1
+    dbf = 'PDR3'
+    if dbf in list(op):
+        ax.plot(op.coordinate, op.loc[:, dbf], color = dbf_color_map[dbf], label = dbf)
+        ax.fill_between(op.coordinate, op.loc[:, dbf], color = dbf_color_map[dbf])
+        
 def plot_occupancy_profile(ax, op, chromo, coordinate_start, pwmFile, padding = 0, threshold = 0.1,
                            figsize=(18,4), file_name = None, dbf_color_map = None, nucDyad = False):
 #    plt.figure(figsize=figsize)
@@ -97,7 +120,7 @@ def plot_occupancy_profile(ax, op, chromo, coordinate_start, pwmFile, padding = 
         pwm = pickle.load(open(pwmFile, "rb"))
         predefined_dbfs = list(pwm.keys())
         # get upper case
-        predefined_dbfs = [x for x in predefined_dbfs if x != "unknown_TF"]
+        predefined_dbfs = [x for x in predefined_dbfs if x != "unknown"]
         predefined_dbfs = list(set([(x.split("_")[0]).upper() for x in predefined_dbfs]))
         n_tfs = len(predefined_dbfs)
         colorset48 = [(random.random(), random.random(), random.random(), 1.0) for i in range(n_tfs)] 
@@ -105,7 +128,7 @@ def plot_occupancy_profile(ax, op, chromo, coordinate_start, pwmFile, padding = 
 
         dbf_color_map = dict(list(zip(predefined_dbfs, colorset48)))
         dbf_color_map['nucleosome'] = nucleosome_color
-        dbf_color_map['unknown_TF'] =  '#D3D3D3'
+        dbf_color_map['unknown'] =  '#D3D3D3'
         
     op['coordinate'] = np.arange(coordinate_start, coordinate_start + op.shape[0])
     op = op.iloc[padding:(-padding-1), :]
@@ -116,7 +139,7 @@ def plot_occupancy_profile(ax, op, chromo, coordinate_start, pwmFile, padding = 
     plot_dbf_binding(op, dbf_color_map, nucDyad, ax)
     
     #######################  set axis properties #######################
-    ax.set_xlim(op.coordinate.iloc[0]-op.shape[0]/100.0, op.coordinate.iloc[-1] + op.shape[0]/100.0)
+    # ax.set_xlim(op.coordinate.iloc[0]-op.shape[0]/100.0, op.coordinate.iloc[-1] + op.shape[0]/100.0)
     ax.set_ylim(0, 1)
 
 

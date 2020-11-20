@@ -57,7 +57,7 @@ def computeLinkers(nucFile):
         for line in infile:
             l = line.strip().split()
             if "micron" in l[0]: continue
-            chrm = roman.fromRoman(l[0][3:])
+            chrm = l[0]
             if int(l[1]) - 73 - 15 > 0:
                 segments.append({"chrm": chrm, "start": int(l[1]) - 73 - 15, "stop": int(l[1]) - 73})
             segments.append({"chrm": chrm, "start": int(l[1]) + 73, "stop": int(l[1]) + 73 + 15})
@@ -77,7 +77,7 @@ def computeChrSegments(chrSizes):
         segments.append({'chrm': chrm, 'start': start, 'stop': start + segmentSize})
     return segments
 
-def computeMNaseNucMusPhis(bamFile, nucleosomeFile, fragRange):
+def computeMNaseNucOneMusPhis(bamFile, nucleosomeFile, fragRange):
     empiricalCounts = []
     samfile = pysam.AlignmentFile(bamFile)
     with open(nucleosomeFile) as infile:
@@ -90,8 +90,10 @@ def computeMNaseNucMusPhis(bamFile, nucleosomeFile, fragRange):
             counts = [0 for i in range(start, stop + 1)]
             # ignore chrXII
             if l[0] == "chrXII": continue
-            regions = samfile.fetch(str(roman.fromRoman(l[0][3:])), max(0, start - 200), stop + 200)
+            regions = samfile.fetch(l[0], max(0, start - 200), stop + 200)
+            # regions = samfile.fetch(l[0], max(0, start - 200), stop + 200)
             for r in regions:
+                if r.template_length <= 0: continue
                 rStart = r.reference_start + 1
                 rEnd = r.reference_start + r.template_length
                 m = (rStart + rEnd)/2
@@ -99,8 +101,45 @@ def computeMNaseNucMusPhis(bamFile, nucleosomeFile, fragRange):
                 if width < fragRange[0] or width > fragRange[1]: continue
                 if m < start or m > stop: continue
                 counts[int(m - start)] += 1
-            empiricalCounts.append(counts)
+            empiricalCounts.extend(counts)
     empiricalCounts = np.array(empiricalCounts)
+    mus = []
+    phis = []
+    ec = empiricalCounts
+    fitdist = importr("fitdistrplus")
+    params = fitdist.fitdist(vectors.IntVector(ec), 'nbinom', method = 'mle')
+    params = params.rx2("estimate")
+    mus = params.rx2("mu")[0]
+    phis = params.rx2("size")[0]
+    return mus, phis
+
+def computeMNaseNucMusPhis(bamFile, nucleosomeFile, fragRange, offset = 0):
+    empiricalCounts = []
+    samfile = pysam.AlignmentFile(bamFile)
+    with open(nucleosomeFile) as infile:
+        for line in infile:
+            if line[0] == "#": continue
+            l = line.strip().split()
+            if l[0] == "chr": continue
+            start = int(l[1]) - 73
+            stop = int(l[1]) + 74
+            counts = [0 for i in range(start, stop + 1)]
+            # ignore chrXII
+            if l[0] == "chrXII": continue
+            regions = samfile.fetch(l[0], max(0, start - 200), stop + 200)
+            # regions = samfile.fetch(l[0], max(0, start - 200), stop + 200)
+            for r in regions:
+                if r.template_length - 2*offset <= 0: continue
+                rStart = r.reference_start + 1 + offset
+                rEnd = r.reference_start + offset + r.template_length - 2*offset
+                m = (rStart + rEnd)/2
+                width = abs(r.template_length - 2*offset)
+                if width < fragRange[0] or width > fragRange[1]: continue
+                if m < start or m > stop: continue
+                counts[int(m - start)] += 1
+            empiricalCounts.append(counts)
+    empiricalCounts = np.array(empiricalCounts)[:, :147]    
+    #np.savetxt("/usr/xtmp/sneha/tmpDir/mnaseCountsNuc.txt", empiricalCounts)
     mus = []
     phis = []
     # nucleosomal DNA is 147 bases long
@@ -111,9 +150,14 @@ def computeMNaseNucMusPhis(bamFile, nucleosomeFile, fragRange):
         params = params.rx2("estimate")
         mus.append(params.rx2("mu")[0])
         phis.append(params.rx2("size")[0])
+    # np.savetxt("/usr/xtmp/sneha/tmpDir/mnaseEcounts.txt", empiricalCounts)
+    # np.savetxt("/usr/xtmp/sneha/tmpDir/mnaseCountsNucMus.txt", mus)
+    # np.savetxt("/usr/xtmp/sneha/tmpDir/mnaseCountsNucPhis.txt", phis)
+    # exit(0)
+
     return mus, phis
 
-def computeMNaseBackground(bamFile, segments, fragRange):
+def computeMNaseBackground(bamFile, segments, fragRange, offset = 0):
     """
     Compute MNase-seq midpoint of background distribution.
     """
@@ -122,16 +166,17 @@ def computeMNaseBackground(bamFile, segments, fragRange):
     for s in segments:
         minStart = s['start']
         maxEnd = s['stop'] + fragRange[1]
-        region = samfile.fetch(str(s['chrm']), minStart - 200, maxEnd + 200)
+        region = samfile.fetch(s['chrm'], minStart - 200, maxEnd + 200)
+        # region = samfile.fetch("chr" + roman.toRoman(s['chrm']), minStart - 200, maxEnd + 200)
         count = [0 for i in range(s['stop'] - s['start'])]
         for i in region:
-            if i.template_length >= 0:
-                start = i.reference_start
-                end = i.reference_start + i.template_length - 1
+            if i.template_length - 2*offset <= 0: continue
+            if i.template_length - 2*offset >= 0:
+                start = i.reference_start + offset
+                end = i.reference_start + offset + i.template_length - 1 - 2*offset
             else:
-                end = i.reference_start
-                start = i.reference_start + i.template_length - 1
-            width = abs(i.template_length)
+                continue
+            width = abs(i.template_length - 2*offset)
             if width >= fragRange[0] and width <= fragRange[1] and (start + end)/2 >= s['start'] and (start + end)/2 < s['stop']:
                 count[int((start + end)/2 - s['start'])] += 1
         counts = counts + count
@@ -151,11 +196,12 @@ def computeMNaseBackground(bamFile, segments, fragRange):
     return params
 
 
-def computeMNaseTFPhisMus(bamFile, csvFile, fragRange, filename):
+def computeMNaseTFPhisMus(bamFile, csvFile, fragRange, filename, offset = 0):
     """
     Negative binomial distribution for short fragments at TF
     binding sites.
     """
+    #print("Getting short frags")
     TFs = ["ABF1", "REB1"]
     tfCounts = []
     nucCounts = []
@@ -166,23 +212,25 @@ def computeMNaseTFPhisMus(bamFile, csvFile, fragRange, filename):
             if l[3] not in TFs: continue
             minStart = int(l[1])
             maxEnd = int(l[2])
-            chrm = roman.fromRoman(l[0][3:])
+            chrm = l[0]
             countMid = [0 for i in range(maxEnd - minStart + 1)]
             countNuc = [0 for i in range(maxEnd - minStart + 1)]
-            region = samfile.fetch(str(chrm), minStart - fragRange[1] - 1, maxEnd + fragRange[1] - 1)
+            #print(chrm, minStart - fragRange[1] - 1, maxEnd + fragRange[1] - 1)
+            region = samfile.fetch(chrm, minStart - fragRange[1] - 1, maxEnd + fragRange[1] - 1)
+            # region = samfile.fetch("chr" + roman.toRoman(chrm), minStart - fragRange[1] - 1, maxEnd + fragRange[1] - 1)
             for i in region:
-                if i.template_length >= 0:
-                    start = i.reference_start + 1
-                    end = i.reference_start + i.template_length
+                if i.template_length - 2*offset >= 0:
+                    start = i.reference_start + 1 + offset
+                    end = i.reference_start + offset + i.template_length - 2*offset
                 else:
-                    end = i.reference_start + 1
-                    start = i.reference_start + i.template_length
-                width = abs(i.template_length)
+                    continue
+                width = abs(i.template_length - 2*offset)
                 if width >= fragRange[0] and width <= fragRange[1] and (start + end)/2 >= minStart and (start + end)/2 <= maxEnd: 
                     countMid[int((start + end)/2 - minStart)] += 1
             tfCounts = tfCounts + countMid
             nucCounts = nucCounts + countNuc
-
+    np.save("/usr/xtmp/sneha/tmpDir/mnaseCountstf", tfCounts)
+    # exit(0)
     try:
         fitdist = importr('fitdistrplus')
         p = fitdist.fitdist(vectors.IntVector(tfCounts), 'nbinom', method = "mle")

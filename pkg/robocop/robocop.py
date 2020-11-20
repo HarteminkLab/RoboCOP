@@ -6,6 +6,7 @@ import sys, os
 from .nucleosome import nuc_dinucleotide_model_file, nuc_model_length
 from .utils import parameters as nuc_parameters
 import pickle
+from Bio import SeqIO
 
 def reverse_complement(pwm):
     """
@@ -30,7 +31,7 @@ def createDictionary(segment, dshared):
     d['posterior_table'] = None
     return d
 
-def createSharedDictionary(d, tf_prob, background_prob, nucleosome_prob, pwmFile, tmpDir, nt_array = None, n_obs = None, lock = None):
+def createSharedDictionary(d, tf_prob, background_prob, nucleosome_prob, pwm, tmpDir, nt_array = None, n_obs = None, lock = None):
     """
     create shared dictionary with shared information.
     Create HMM transition matrix.
@@ -54,8 +55,8 @@ def createSharedDictionary(d, tf_prob, background_prob, nucleosome_prob, pwmFile
         # assuming all segments are of same size
         if d['nucleotides'] is not None: d['n_obs'] = len(np.load(d['tmpDir'] + "nucleotides.idx0.npy"))
     # build the HMM transition matrix
-    build_transition_matrix(d, pwmFile, tf_prob = _tf_prob, background_prob = background_prob, nucleosome_prob = nucleosome_prob, allow_end_at_any_state = 1)
-    if nt_array != None: stack_pwms(d, pwmFile)
+    build_transition_matrix(d, pwm, tf_prob = _tf_prob, background_prob = background_prob, nucleosome_prob = nucleosome_prob, allow_end_at_any_state = 1)
+    if nt_array != None: stack_pwms(d, pwm)
 
 #### transition matrix related code 
 def check_parameters(d):
@@ -87,22 +88,22 @@ def check_parameters(d):
                 error_message += ', or the background conc should be set to 1.'
                 sys.exit(error_message)
 
-def build_transition_matrix(d, pwmFile, tf_prob, background_prob = 0,
+def build_transition_matrix(d, pwm, tf_prob, background_prob = 0,
                             nucleosome_prob = 0, allow_end_at_any_state = 1):
     """Build the backbone of the transition matrix. Set transition inside
     motifs to be 1. Set the nucleosome dinucleotide mode if nuc is present."""
-    get_transition_matrix_info(d, pwmFile, allow_end_at_any_state)
+    get_transition_matrix_info(d, pwm, allow_end_at_any_state)
     _build_transition_matrix(d)
     set_transition(d, [], background_prob, nucleosome_prob)
     set_initial_probs(d)
     set_end_probs(d)
         
-def get_transition_matrix_info(d, pwmFile, allow_end_at_any_state):
+def get_transition_matrix_info(d, pwm, allow_end_at_any_state):
     """
     Obtain the information needed to construct the transition matrix,
     based on DBFs in the model and PWM used. 
     """
-    pwm = pickle.load(open(pwmFile, "rb"), encoding = "latin1")
+    # pwm = pickle.load(open(pwmFile, "rb"), encoding = "latin1")
     nucleosome_prob = d['nucleosome_prob']
     tfs = d['tfs']
     # adding padding to TFs on both sides
@@ -152,7 +153,7 @@ def get_transition_matrix_info(d, pwmFile, allow_end_at_any_state):
     d['nuc_len'] = nuc_len 
     d['n_states'] = n_states
     # hard coding for now
-    d['n_vars'] = 4
+    d['n_vars'] = 5
     d['silent_states_begin'] = silent_states_begin
     d['tf_starts'] = tf_starts
     d['tf_lens'] = tf_lens
@@ -188,9 +189,9 @@ def _build_transition_matrix(d):
                 c_char_p(nuc_dinucleotide_model_file.encode('utf-8')))
         d['transition_matrix'] = t_mat
 
-def stack_pwms(d, pwmFile):
-    #background must be in the model
-    pwm = pickle.load(open(pwmFile, "rb"), encoding = 'latin1')
+def stack_pwms(d, pwm):
+    # background must be in the model
+    # pwm = pickle.load(open(pwmFile, "rb"), encoding = 'latin1')
     tfs = d['tfs']
     pwm_emat = np.transpose(pwm['background']['matrix'])
     for tf in tfs:
@@ -217,10 +218,10 @@ def stack_pwms(d, pwmFile):
 def _build_data_emission_matrix(d, dshared):
     # 3d matrix -- dim 0 is for timepoints, 
     # dim 1 denotes the multivariate emission values
-    # right now it's (0) nucleotide, (1) mnase-short, (2) mnase-long, (3) dnase
+    # right now it's (0) nucleotide, (1) mnase-short, (2) mnase-long, (3) atac-short (4) atac-long
     # need to remove hard codedness in future
     for t in range(dshared['timepoints']):
-        data_emat = np.ones((4, dshared['n_obs'], dshared['n_states']))
+        data_emat = np.ones((5, dshared['n_obs'], dshared['n_states']))
         d['data_emission_matrix'] = data_emat
         if dshared['nucleotides'] is not None: update_data_emission_matrix_using_nucleotides(d, dshared)
     
@@ -231,18 +232,15 @@ def update_data_emission_matrix_using_nucleotides(d, dshared):
     robocopC = CDLL(dshared["robocopC"])
     robocopC.build_emission_mat_from_pwm.argtypes = [ndpointer(np.long, flags = "C_CONTIGUOUS"), ndpointer(np.double, flags = "C_CONTIGUOUS"), c_int, c_int, c_int, c_int, ndpointer(np.double, flags = "C_CONTIGUOUS")]
     data_emission_matrix = d['data_emission_matrix']
-        
     for t in range(dshared['timepoints']):
         nucleotides = np.load(dshared['tmpDir'] + "nucleotides.idx" + str(d['segment']) + ".npy")
         data_emat = data_emission_matrix[0]
         pwm = dshared['pwm_emission']
-        
         nucleotides = nucleotides.astype(np.long)
         pwm = pwm.astype(np.double)
         data_emat = data_emat.astype(np.double)
 
         robocopC.build_emission_mat_from_pwm(nucleotides, pwm, dshared['n_obs'], dshared['n_states'], dshared['silent_states_begin'], 4, data_emat)
-
         data_emission_matrix[0] = data_emat
         d['data_emission_matrix'] = data_emission_matrix
 
@@ -271,16 +269,16 @@ def update_data_emission_matrix_using_negative_binomial(
     d['data_emission_matrix'] = data_emission_matrix
 
 def update_data_emission_matrix_using_mnase_midpoint_counts_onePhi(
-            d, dshared, nuc_phi, nuc_mus, tf_phi, tf_mu, other_phi, other_mu, mnaseType):
+            d, dshared, nuc_phi, nuc_mus, tf_phi, tf_mu, other_phi, other_mu, mnaseType, tech = "MNase"):
     """
     Update data emission matrix using N.B.
     """
     tf_starts = dshared['tf_starts']
     tf_lens = dshared['tf_lens']
     if mnaseType == 'short':
-        mnaseData = np.load(dshared['tmpDir'] + "MNaseShort.idx" + str(d['segment']) + ".npy")
+        mnaseData = np.load(dshared['tmpDir'] + tech + "Short.idx" + str(d['segment']) + ".npy")
     else:
-        mnaseData = np.load(dshared['tmpDir'] + "MNaseLong.idx" + str(d['segment']) + ".npy")
+        mnaseData = np.load(dshared['tmpDir'] + tech + "Long.idx" + str(d['segment']) + ".npy")
     phis = np.zeros(dshared['silent_states_begin'])
     mus = np.zeros(dshared['silent_states_begin'])
     phis[:] = other_phi
@@ -299,8 +297,10 @@ def update_data_emission_matrix_using_mnase_midpoint_counts_onePhi(
     assert (mus == 0).sum() == 0
     assert (phis == 0).sum() == 0
     for t in range(dshared['timepoints']):
-        if mnaseType == 'short': update_data_emission_matrix_using_negative_binomial(d, dshared, phis, mus, mnaseData, 1, t)
-        else: update_data_emission_matrix_using_negative_binomial(d, dshared, phis, mus, mnaseData, 2, t)
+        if mnaseType == 'short' and tech == "MNase": update_data_emission_matrix_using_negative_binomial(d, dshared, phis, mus, mnaseData, 1, t)
+        elif mnaseType == 'short' and tech == "ATAC": update_data_emission_matrix_using_negative_binomial(d, dshared, phis, mus, mnaseData, 3, t)
+        elif mnaseType == 'long' and tech == "MNase": update_data_emission_matrix_using_negative_binomial(d, dshared, phis, mus, mnaseData, 2, t)
+        elif mnaseType == 'long' and tech == "ATAC": update_data_emission_matrix_using_negative_binomial(d, dshared, phis, mus, mnaseData, 4, t)
 
 def set_transition(d, tf_prob, background_prob, nucleosome_prob):
     """
@@ -353,6 +353,7 @@ def set_initial_probs(d):
             d['nuc_present'], d['nuc_start'], d['nuc_len'],
             t_mat, initial_probs)
     # check initial probs
+    print("initial probs:", np.abs(np.sum(initial_probs)))
     assert np.abs(np.sum(initial_probs) - 1) < 0.00001
     d['initial_probs'] = initial_probs
         
@@ -408,7 +409,7 @@ def posterior_forward_backward_loop(d, dshared, segment):
     btable = btable.astype(np.double)
     fscaling_factors = fscaling_factors.astype(np.double)
     bscaling_factors = bscaling_factors.astype(np.double)
-    scaling_factors = scaling_factors.astype(np.double)
+    scaling_factors = scaling_factors.astype(np.longdouble)
     p_table = p_table.astype(np.double)
     motif_starts = motif_starts.astype(np.long)
     motif_lens = motif_lens.astype(np.long)
@@ -442,18 +443,19 @@ def posterior_forward_backward_loop(d, dshared, segment):
         dshared['nuc_present'], dshared['nuc_start'], dshared['nuc_len'],
         btable, bscaling_factors)
 
-    robocopC.calc_sr.argtypes = [ndpointer(np.double, flags = "C_CONTIGUOUS"), ndpointer(np.double, flags = "C_CONTIGUOUS"), c_int, ndpointer(np.double, flags = "C_CONTIGUOUS")]
+    robocopC.calc_sr.argtypes = [ndpointer(np.double, flags = "C_CONTIGUOUS"), ndpointer(np.double, flags = "C_CONTIGUOUS"), c_int, ndpointer(np.longdouble, flags = "C_CONTIGUOUS")]
     robocopC.calc_sr.restype = c_double
     log_fscaling_factor_sum_loop = robocopC.calc_sr(
         fscaling_factors, bscaling_factors,
         dshared['n_obs'], scaling_factors)
 
     # posterior decoding
-    robocopC.posterior_decoding.argtypes = [ndpointer(np.double, flags = "C_CONTIGUOUS"), ndpointer(np.double, flags = "C_CONTIGUOUS"), ndpointer(np.double, flags = "C_CONTIGUOUS"), ndpointer(np.double, flags = "C_CONTIGUOUS"), c_int, c_int, ndpointer(np.double, flags = "C_CONTIGUOUS")]
+    robocopC.posterior_decoding.argtypes = [ndpointer(np.double, flags = "C_CONTIGUOUS"), ndpointer(np.double, flags = "C_CONTIGUOUS"), ndpointer(np.double, flags = "C_CONTIGUOUS"), ndpointer(np.longdouble, flags = "C_CONTIGUOUS"), c_int, c_int, ndpointer(np.double, flags = "C_CONTIGUOUS")]
     robocopC.posterior_decoding(
         ftable, btable, bscaling_factors,
         scaling_factors, dshared['n_states'], dshared['n_obs'], 
         p_table)
+
     d['posterior_table'] = p_table
     return log_fscaling_factor_sum_loop
 

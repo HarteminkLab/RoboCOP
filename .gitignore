@@ -8,3 +8,13 @@ analysis/working_config.ini
 *__pycache__*
 *dm504*
 .gitignore~
+*.bak
+*cell_cycle*
+*Copy*
+*copy*
+*slurmScript*
+*COMPETE*
+*Multiple*
+*multiple*
+*slurm*
+pkg/core

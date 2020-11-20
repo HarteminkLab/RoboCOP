@@ -33,20 +33,26 @@ def update_transition_probs(dshared, segments, tmpDir, threshold):
     for t in range(segments):
         x = loadIdx(tmpDir, t)
         p_table += x['posterior_table']
+        print("Ptable sum:", np.sum(x['posterior_table']), t)
     dbf_posterior_start_probs_same_update = np.empty(dshared['n_tfs'] + 1 + 1) # assuming nucs always present
     dbf_posterior_start_probs_same_update[0] = p_table[:,0].sum()
+    print("Bg sum:", dbf_posterior_start_probs_same_update[0])
         # tfs
     for i in range(dshared['n_tfs']):
-        dbf_posterior_start_probs_same_update[i + 1] = p_table[:,tf_starts[i]].sum()
-        dbf_posterior_start_probs_same_update[i + 1] += p_table[:,tf_starts[i] + tf_lens[i]].sum()
-        #if self.nuc_present: # assuming nucs are present
-    dbf_posterior_start_probs_same_update[dshared['n_tfs'] + 1] = p_table[:, dshared['nuc_start']].sum()
-    # re normalize
-    dbf_posterior_start_probs_same_update_em = dbf_posterior_start_probs_same_update / dbf_posterior_start_probs_same_update.sum()
+        dbf_posterior_start_probs_same_update[i + 1] = np.sum(p_table[:,tf_starts[i]])
+        dbf_posterior_start_probs_same_update[i + 1] += np.sum(p_table[:,tf_starts[i] + tf_lens[i]])
+        print("TF p sum:", dbf_posterior_start_probs_same_update[i + 1])
+    dbf_posterior_start_probs_same_update[dshared['n_tfs'] + 1] = np.sum(p_table[:, dshared['nuc_start']])
+    print("Nuc p sum:", dbf_posterior_start_probs_same_update[dshared['n_tfs'] + 1])
 
+    print("Posterior sum:", np.sum(dbf_posterior_start_probs_same_update))
+    # re normalize
+    dbf_posterior_start_probs_same_update_em = dbf_posterior_start_probs_same_update / np.sum(dbf_posterior_start_probs_same_update)
+    
     # active constraint based EM to limit the max probability for any TF excepting unknown
     # unknown is the last TF in the list
-    if np.any(dbf_posterior_start_probs_same_update_em[1 : dshared['n_tfs']] > threshold): dbf_posterior_start_probs_same_update_em = adjustEM(dbf_posterior_start_probs_same_update_em, dshared, threshold)
+    if np.any(dbf_posterior_start_probs_same_update_em[1 : dshared['n_tfs']] > threshold):
+        dbf_posterior_start_probs_same_update_em = adjustEM(dbf_posterior_start_probs_same_update_em, dshared, threshold)
     background_prob = dbf_posterior_start_probs_same_update_em[0] 
     tf_prob = dict()
     for i in range(dshared['n_tfs']):
@@ -57,10 +63,10 @@ def update_transition_probs(dshared, segments, tmpDir, threshold):
 
 # update data emission matrix using negative binomial distribution parameters
 def updateMNaseEMMatNB(args):
-    (t, dshared, countParams) = args
+    (t, dshared, countParams, tech) = args
     x = loadIdx(dshared['tmpDir'], t)
-    robocop.update_data_emission_matrix_using_mnase_midpoint_counts_onePhi(x, dshared, nuc_phi = countParams['nucLong']['phi'], nuc_mus = countParams['nucLong']['mu']*countParams['nucLong']['scale'], tf_phi = countParams['tfLong']['phi'], tf_mu = countParams['tfLong']['mu'], other_phi = countParams['otherLong']['phi'], other_mu = countParams['otherLong']['mu'], mnaseType = 'long')
-    robocop.update_data_emission_matrix_using_mnase_midpoint_counts_onePhi(x, dshared, nuc_phi = countParams['nucShort']['phi'], nuc_mus = countParams['nucShort']['mu']*countParams['nucShort']['scale'], tf_phi = countParams['tfShort']['phi'], tf_mu = countParams['tfShort']['mu'], other_phi = countParams['otherShort']['phi'], other_mu = countParams['otherShort']['mu'], mnaseType = 'short')
+    robocop.update_data_emission_matrix_using_mnase_midpoint_counts_onePhi(x, dshared, nuc_phi = countParams['nucLong']['phi'], nuc_mus = countParams['nucLong']['mu']*countParams['nucLong']['scale'], tf_phi = countParams['tfLong']['phi'], tf_mu = countParams['tfLong']['mu'], other_phi = countParams['otherLong']['phi'], other_mu = countParams['otherLong']['mu'], mnaseType = 'long', tech = tech)
+    robocop.update_data_emission_matrix_using_mnase_midpoint_counts_onePhi(x, dshared, nuc_phi = countParams['nucShort']['phi'], nuc_mus = countParams['nucShort']['mu']*countParams['nucShort']['scale'], tf_phi = countParams['tfShort']['phi'], tf_mu = countParams['tfShort']['mu'], other_phi = countParams['otherShort']['phi'], other_mu = countParams['otherShort']['mu'], mnaseType = 'short', tech = tech)
     dumpIdx(x, dshared['tmpDir'])
 
 # Posterior decoding

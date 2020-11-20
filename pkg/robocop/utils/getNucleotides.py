@@ -7,6 +7,7 @@
 
 from Bio import SeqIO
 import numpy as np
+import roman
 
 # Convert nucleotides to 0, 1, 2, 3
 def mapNucToInt(n):
@@ -18,17 +19,23 @@ def mapNucToInt(n):
         return 2
     else: return 3
 
-# extract nucleotide sequence for given chromosome, start and stop
+# extract nucleotide sequence for given chromosome, start and stop                                                                                                                                          
 def getNucleotideSequence(fastaFile, chromosome, start = 0, stop = 0):
-    fastaSequence = list(SeqIO.parse(open(fastaFile), 'fasta'))
-    sequenceLengths = [len(x.seq) for x in fastaSequence]
+    fastaSeq = list(SeqIO.parse(open(fastaFile), 'fasta'))
+    fastaSequence = {}
+    sequenceLengths = {}
+    for fs in fastaSeq:
+        fastaSequence[fs.name] = fs.seq
+        sequenceLengths[fs.name] = len(fs.seq)
+    #print("chr:", chromosome)
+    #print("Stop", stop, "len", sequenceLengths[chromosome])
     if stop > sequenceLengths[chromosome]:
-        print("ERROR: Invalid stop position for chromosome", chromosome)
+        print("ERROR: Invalid stop position for chromosome", chromosome, start, stop, sequenceLengths[chromosome])
         exit(1)
     if start <= 0:
         print("ERROR: Invalid start position for chromosome", chromosome)
         exit(1)
-        
-    sequence = fastaSequence[chromosome].seq[(start - 1) : stop]
+
+    sequence = fastaSequence[chromosome][(start - 1) : stop]
     sequence = np.asarray([mapNucToInt(x) for x in sequence])
     return sequence
