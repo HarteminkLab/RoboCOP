@@ -33,7 +33,6 @@ def runROBOCOP_NO_EM(coordFile, config, outDir, tmpDir, trainOutDir, pool, dnase
     nucFile = config.get("main", "nucFile")
     mnaseFiles = config.get("main", "mnaseFile")
     cshared = config.get("main", "cshared")
-    #mnaseFiles = ""
 
     # chromosome segments in data frame
     coords = pandas.read_csv(coordFile, sep = "\t")
@@ -77,7 +76,6 @@ def runROBOCOP_NO_EM(coordFile, config, outDir, tmpDir, trainOutDir, pool, dnase
     print("Likelihood before EM:", getLogLikelihood(segments, dshared['tmpDir']))
     print("Exiting before EM")
 
-    # printPosterior(segments, dshared, tmpDir, outDir)
     likelihood = getLogLikelihood(segments, dshared['tmpDir'])
     print("Likelihood after EM:", likelihood) 
     return likelihood

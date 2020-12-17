@@ -103,7 +103,6 @@ def get_transition_matrix_info(d, pwm, allow_end_at_any_state):
     Obtain the information needed to construct the transition matrix,
     based on DBFs in the model and PWM used. 
     """
-    # pwm = pickle.load(open(pwmFile, "rb"), encoding = "latin1")
     nucleosome_prob = d['nucleosome_prob']
     tfs = d['tfs']
     # adding padding to TFs on both sides
@@ -191,7 +190,6 @@ def _build_transition_matrix(d):
 
 def stack_pwms(d, pwm):
     # background must be in the model
-    # pwm = pickle.load(open(pwmFile, "rb"), encoding = 'latin1')
     tfs = d['tfs']
     pwm_emat = np.transpose(pwm['background']['matrix'])
     for tf in tfs:
