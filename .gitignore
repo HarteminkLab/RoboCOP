@@ -18,3 +18,4 @@ analysis/working_config.ini
 *multiple*
 *slurm*
 pkg/core
+*/checkAllIfPresent.py

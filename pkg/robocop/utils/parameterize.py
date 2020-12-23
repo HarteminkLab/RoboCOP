@@ -46,26 +46,20 @@ def getDBFconc(nucFile, pwmFile):
     pwm = pickle.load(open(pwmFile, "rb"), encoding = 'latin1')
     # remove secondary motif
 
-    #secondaryMotifs = [x for x in list(pwm.keys()) if "secondary" in x]
-    #for motif in secondaryMotifs: pwm.pop(motif)
-    # print("TFs:", sorted(list(pwm.keys())))
-    
     pwm['background'] = {"matrix": computeBackground(nucFile)}
     pwm['unknown'] = {"matrix": computeUnknown(pwm['background']['matrix'])}
-    # # remove at/gc rich motifs
-    # atgc = ['Azf1', 'Nhp6a', 'Nhp6b', 'Pho2', 'Sfp1', 'Sig1', 'Smp1', 'Spt15', 'Stb3', 'Sum1', 'Yox1', 'Asg1', 'Cat8', 'Gal4', 'Hal9', 'Msn2', 'Nhp10', 'Pdr1', 'Put3', 'Rei1', 'Rpn4', 'Rsc30', 'Rsc3', 'Sip4', 'Skn7', 'Stp1', 'Stp2', 'Swi5', 'Uga3', 'Yer184c', 'Yll054c']
-    # atgcmotifs = list(filter(lambda x: x.split("_")[0] in atgc, pwm.keys()))
-    # for motif in atgcmotifs: pwm.pop(motif)
 
     # # remove unknown
     # pwm.pop('unknown_TF')
 
     dbf_conc = [(k, calculateKD(pwm, k)) for k in list(pwm.keys())]
     # dbf_conc.append(('background', 1.0))
-    dbf_conc.append(('nucleosome', 35))
+    # dbf_conc.append(('nucleosome', 35))
     dbf_conc = dict(dbf_conc)
-
-    # print("DBF conc.", dbf_conc)
+    dbf_conc['background'] = 1.0
+    dbf_conc['nucleosome'] = 35
+    
+    print("DBF conc.", dbf_conc)
 
     print("Number of TFs in my list:", len(list(dbf_conc.keys())) - 2)
 
