@@ -17,13 +17,16 @@ robocop.egg-info/top_level.txt
 robocop/nucleosome/__init__.py
 robocop/nucleosome/nuc_dinucleotide_model.txt
 robocop/utils/__init__.py
+robocop/utils/checkIfAllPresent.py
 robocop/utils/concentration_probability_conversion.py
 robocop/utils/getMotifsFromMEME.py
 robocop/utils/getNucleosomesRoboCOP.py
 robocop/utils/getNucleotides.py
 robocop/utils/getReads.py
 robocop/utils/get_cell_cycle_genes.py
+robocop/utils/getbgRoboCOP.py
 robocop/utils/gettfsRoboCOP.py
+robocop/utils/gettfsRoboCOPCopy.py
 robocop/utils/parameterize.py
 robocop/utils/parameters.py
 robocop/utils/plotDBF_cell_cycle.py
@@ -31,6 +34,9 @@ robocop/utils/plotDBF_cell_cycle_new.py
 robocop/utils/plotMNaseMidpoints.py
 robocop/utils/plotRoboCOP.py
 robocop/utils/plotRoboCOPMultiple.py
+robocop/utils/plotRoboCOPMultipleATAC.py
+robocop/utils/plotRoboCOPMultipleATACMNase.py
+robocop/utils/plotRoboCOPMultipleATACos.py
 robocop/utils/plotRoboCOPMultiple_Idx.py
 robocop/utils/plotRoboCOP_COMPETE.py
 robocop/utils/plotRoboCOP_COMPETE_multiple.py

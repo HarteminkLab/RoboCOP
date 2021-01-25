@@ -94,6 +94,16 @@ def runROBOCOP_EM(coordFile, config, outDir, tmpDir, pool, mnaseFile, dnaseFiles
             pickle.dump(mnaseParams, writeFile, pickle.HIGHEST_PROTOCOL)
 
     for i in range(iterations):
+
+        #create new dshared
+        dsharedNew = {}
+        for k in list(dshared.keys()):
+            dsharedNew[k] = dshared[k]
+        print("Writing to HMMconfig")
+        with open(outDir + "/HMMconfig" + str(i) + ".pkl", 'wb') as writeFile:
+            pickle.dump(dsharedNew, writeFile, pickle.HIGHEST_PROTOCOL)
+
+        
         # Baum-Welch on transition probabilities
         background_prob, _tf_prob, nucleosome_prob = update_transition_probs(dshared, segments, tmpDir, threshold)
         tf_prob = np.array([_tf_prob[_] for _ in np.array(sorted(_tf_prob.keys()), order = 'c')])
