@@ -54,12 +54,11 @@ path is /home/myhome/RoboCOP/pkg/robocop/librobocop.so then in config.ini set:
 
 ### Download MNase-seq BAM file
 
-MNase-seq before cadmium treatment (referenced as DM504 in the paper) can be generated as follows.
-MNase-seq BAM files used in the paper can be downloaded from <https://doi.org/10.7924/r4hx1b43s>.
+Update path of mnaseFile in config.ini to the path of the MNase-seq BAM file you want to use.
 
-Update path of mnaseFile in config.ini to the path of the downloaded MNase-seq BAM file.
+An example MNase-seq BAM file that we used in the RECOMB submission can be downloaded from <https://doi.org/10.7924/r4hx1b43s>.
 
-### Running:
+### Running on a single MNase-seq or ATAC-seq file:
 
 Have the path of all configuration files in config.ini. To run RoboCOP on a
 set of genome regions with Baum-Welch update of transition probabilities:
