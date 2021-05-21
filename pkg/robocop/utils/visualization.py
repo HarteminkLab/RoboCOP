@@ -74,14 +74,14 @@ def plot_dbf_binding(op, dbf_color_map, nucDyad, ax):
             ax.plot(op.coordinate, op.loc[:, 'nucleosome'], color = dbf_color_map['nucleosome'], label = 'nuc')
             ax.fill_between(op.coordinate, op.loc[:, 'nucleosome'], color = dbf_color_map['nucleosome'])
 
-
-    # plot unknown first
+    # plot unknown next
     dbf = 'unknown'
     if dbf in list(op):
         ax.plot(op.coordinate, op.loc[:, dbf], color = dbf_color_map[dbf], label = dbf, alpha = 0.5)
         ax.fill_between(op.coordinate, op.loc[:, dbf], color = dbf_color_map[dbf], alpha = 0.5)
 
     print(list(op))
+    
     #plot all other dbfs
     for dbf in dbfs:
         if dbf == 'unknown' or dbf == 'AZF1' or dbf == 'PDR3': continue
