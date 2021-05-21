@@ -33,19 +33,13 @@ def update_transition_probs(dshared, segments, tmpDir, threshold):
     for t in range(segments):
         x = loadIdx(tmpDir, t)
         p_table += x['posterior_table']
-        print("Ptable sum:", np.sum(x['posterior_table']), t)
     dbf_posterior_start_probs_same_update = np.empty(dshared['n_tfs'] + 1 + 1) # assuming nucs always present
     dbf_posterior_start_probs_same_update[0] = p_table[:,0].sum()
-    print("Bg sum:", dbf_posterior_start_probs_same_update[0])
-        # tfs
     for i in range(dshared['n_tfs']):
         dbf_posterior_start_probs_same_update[i + 1] = np.sum(p_table[:,tf_starts[i]])
         dbf_posterior_start_probs_same_update[i + 1] += np.sum(p_table[:,tf_starts[i] + tf_lens[i]])
-        print("TF p sum:", dbf_posterior_start_probs_same_update[i + 1])
     dbf_posterior_start_probs_same_update[dshared['n_tfs'] + 1] = np.sum(p_table[:, dshared['nuc_start']])
-    print("Nuc p sum:", dbf_posterior_start_probs_same_update[dshared['n_tfs'] + 1])
 
-    print("Posterior sum:", np.sum(dbf_posterior_start_probs_same_update))
     # re normalize
     dbf_posterior_start_probs_same_update_em = dbf_posterior_start_probs_same_update / np.sum(dbf_posterior_start_probs_same_update)
     
