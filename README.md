@@ -1,4 +1,4 @@
-RECOMB paper: Mitra S., Zhong J., MacAlpine D.M., Hartemink A.J. (2020) RoboCOP: Multivariate State Space Model Integrating Epigenomic Accessibility Data to Elucidate Genome-Wide Chromatin Occupancy. In: Schwartz R. (eds) Research in Computational Molecular Biology. RECOMB 2020. Lecture Notes in Computer Science, vol 12074. Springer, Cham.  https://doi.org/10.1007/978-3-030-45257-5_9
+**RECOMB** paper: Mitra S., Zhong J., MacAlpine D.M., Hartemink A.J. (2020) RoboCOP: Multivariate State Space Model Integrating Epigenomic Accessibility Data to Elucidate Genome-Wide Chromatin Occupancy. In: Schwartz R. (eds) Research in Computational Molecular Biology. RECOMB 2020. Lecture Notes in Computer Science, vol 12074. Springer, Cham.  https://doi.org/10.1007/978-3-030-45257-5_9
 
 # RoboCOP (Robotic Chromatin Occupancy Profiler)
 ---------------------------------------------------------------------------
