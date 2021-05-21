@@ -66,8 +66,6 @@ def runROBOCOP_EM(coordFile, config, outDir, tmpDir, pool, mnaseFile, dnaseFiles
                 threshold = tf_prob[i][0]
             if i != 'unknown': thresholds.append(tf_prob[i][0])
             tName.append((i, tf_prob[i][0]))
-    print(thresholds)
-    print(tName)
     threshold = np.mean(thresholds) + 2*np.std(thresholds)
     # get MNase-seq count parameters
     if mnaseFiles: 

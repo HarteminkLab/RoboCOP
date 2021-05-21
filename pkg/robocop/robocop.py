@@ -351,7 +351,6 @@ def set_initial_probs(d):
             d['nuc_present'], d['nuc_start'], d['nuc_len'],
             t_mat, initial_probs)
     # check initial probs
-    print("initial probs:", np.abs(np.sum(initial_probs)))
     assert np.abs(np.sum(initial_probs) - 1) < 0.00001
     d['initial_probs'] = initial_probs
         
@@ -572,7 +571,6 @@ def center_for_dbf_probs(d, dshared):
                                                        posterior_table[i, actual_nuc_start]
                 dbf_binding_probs[i, dshared['n_tfs'] + 5] = \
                                                        posterior_table[i, actual_nuc_end]
-            if dbf_binding_probs[i, dshared['n_tfs'] + 2] > 1.000000001: print("GREATER: ", dbf_binding_probs[t, i, dshared['n_tfs'] + 2])
         return dbf_binding_probs
 
 def sum_for_dbf_probs(d, dshared):
@@ -622,7 +620,6 @@ def sum_for_dbf_probs(d, dshared):
                                                        posterior_table[i, actual_nuc_start]
                 dbf_binding_probs[i, dshared['n_tfs'] + 5] = \
                                                        posterior_table[i, actual_nuc_end]
-            if dbf_binding_probs[i, dshared['n_tfs'] + 2] > 1.000000001: print("GREATER: ", dbf_binding_probs[t, i, dshared['n_tfs'] + 2])
         return dbf_binding_probs
 
 # save posterior probability as csv
