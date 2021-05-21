@@ -1,7 +1,7 @@
 # RoboCOP (Robotic Chromatin Occupancy Profiler)
 ---------------------------------------------------------------------------
 Multivariate state space model that integrates nucleotide sequence and
-chromatin accessibility data (currently used only with MNase-seq) to
+chromatin accessibility data (currently used only with MNase-seq and/or ATAC-seq) to
 compute genome-wide probabilistic occupancy landscape of nucleosomes and
 transciption factors (collectively known as DNA-binding factors or DBFs).
 
@@ -54,6 +54,7 @@ path is /home/myhome/RoboCOP/pkg/robocop/librobocop.so then in config.ini set:
 
 ### Download MNase-seq BAM file
 
+MNase-seq before cadmium treatment (referenced as DM504 in the paper) can be generated as follows.
 MNase-seq BAM files used in the paper can be downloaded from <https://doi.org/10.7924/r4hx1b43s>.
 
 Update path of mnaseFile in config.ini to the path of the downloaded MNase-seq BAM file.
