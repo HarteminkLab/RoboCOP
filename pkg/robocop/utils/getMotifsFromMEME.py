@@ -26,8 +26,6 @@ def convertMotifFormat(motifFile, outputFile):
             for j in range(4):
                 motifDict[foundMotif][j] = motifDict[foundMotif][j] + [float(l[j])]
 
-    print("Number of motifs", len(list(motifDict.keys())))
-
     for m in list(motifDict.keys()):
         motifDict[m] = np.array(motifDict[m])
 

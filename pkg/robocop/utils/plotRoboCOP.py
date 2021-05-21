@@ -12,7 +12,6 @@ import pickle
 import random
 import roman
 import configparser
-sys.path.insert(0, '/usr/project/compbio/sneha/scripts/')
 from plotMNaseMidpoints import plotMidpointsAx
 
 def colorMap(pwmFile):

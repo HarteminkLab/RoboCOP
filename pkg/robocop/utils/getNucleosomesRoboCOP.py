@@ -29,7 +29,6 @@ def getNucScores(coords, dirname, hmmconfig, chrm, chrSize):
         end = int(coords.iloc[k]["end"])
         k += 1
         pTable = np.load(dirname + "posterior_and_emission.idx" + str(i) + ".npz", allow_pickle = True)['posterior']
-        print(i, pTable)
         # nuc center is 73 bases away from nuc_start
         if i == 0:
                 scores[start:end] = np.sum(pTable[:, nuc_center_start:nuc_center_end], axis = 1)
@@ -80,7 +79,6 @@ def getNucPos(dirname, chrSizes):
         arrchr = np.zeros(len(nucchr))
         while len(nucchr[nucchr['score'] > 0]):
             i = np.argmax(nucchr["score"])
-            print(i, j, len(nucchr[nucchr['score'] > 0]))
             # replace surrounding scores with 0
             nc = nucchr.iloc[i]['score']
             idxcount = 0
@@ -90,7 +88,6 @@ def getNucPos(dirname, chrSizes):
                     arrchr[k] = 1
                 nucchr.at[k, 'score'] = 0
             if idxcount < 58 + 59: continue
-            else: print("Accept", idxcount)
             idx[chrkeys[j]].append(i)
             idxscores[chrkeys[j]].append(nc)
             
@@ -108,7 +105,6 @@ def getNucPos(dirname, chrSizes):
     a["dyad"] = dyads
     a["score"] = scores
     a = a.sort_values(by = "score", ascending = False)
-    print(a)
     a.to_hdf(dirname + "/RoboCOP_outputs/nucleosome_dyads_new.h5", key = "df", mode = "w")
 
 if __name__ == '__main__':

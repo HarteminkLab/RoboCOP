@@ -82,7 +82,7 @@ def plot_dbf_binding(op, dbf_color_map, nucDyad, ax):
 
     #plot all other dbfs
     for dbf in dbfs:
-        if dbf == 'unknown' or dbf == 'AZF1' or dbf == 'PDR3': continue
+        if dbf == 'unknown': continue
         if dbf not in list(op): continue
         if dbf not in list(dbf_color_map): continue
         ax.plot(op.coordinate, op.loc[:, dbf], color = dbf_color_map[dbf], label = dbf)

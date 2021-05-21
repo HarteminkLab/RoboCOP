@@ -22,7 +22,6 @@ def getScores(coords, dirname, hmmconfig, chrm, tf, chrSize):
     k = 0
     motifWidths = []
     for i in idx:
-        # print(i)
         start = int(coords.iloc[k]["start"]) - 1
         end = int(coords.iloc[k]["end"])
         k += 1
@@ -113,7 +112,6 @@ def getTFPosMod(dirname, chrSizes, tfs, hmmconfig):
             tfchr = tfchr.reset_index()
             while 1: 
                 i = np.argmax(tfscore)
-                print(i, j, tfscore[i], file = sys.stderr)
                 if tfscore[i] < 1e-1000: break
                 # make that region 0
                 mstart = i

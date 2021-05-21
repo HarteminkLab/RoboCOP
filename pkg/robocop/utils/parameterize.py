@@ -52,8 +52,6 @@ def getDBFconc(nucFile, pwmFile):
     dbf_conc['background'] = 1.0
     dbf_conc['nucleosome'] = 35
     
-    print("DBF conc.", dbf_conc)
-
     print("Number of TFs in my list:", len(list(dbf_conc.keys())) - 2)
 
     # convert concentration to probability
@@ -83,7 +81,6 @@ def getParamsMNase(mnaseFile, nucFile, tfFile, fragRange, tech = "MNase"):
 
         # fit NB to counts in TF sites 
         tfShort = computeMNaseTFPhisMus(mnaseFile, tfFile, fragRange[1], None, offset)
-        print("Computed TF short:", tfShort)
         # long count distribution is same as background
         tfLong = {'mu': otherLong['mu'], 'phi': otherLong['phi']}
         mnaseParams = {'nucLong': nucLong, 'nucShort': nucShort, 'otherLong': otherLong, 'otherShort': otherShort, 'tfLong': tfLong, 'tfShort': tfShort}
