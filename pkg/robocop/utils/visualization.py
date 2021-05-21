@@ -81,22 +81,6 @@ def plot_dbf_binding(op, dbf_color_map, nucDyad, ax):
         ax.plot(op.coordinate, op.loc[:, dbf], color = dbf_color_map[dbf], label = dbf, alpha = 0.5)
         ax.fill_between(op.coordinate, op.loc[:, dbf], color = dbf_color_map[dbf], alpha = 0.5)
 
-    # then plot Azf1
-    dbf = 'AZF1'
-    if dbf in list(op):
-        ax.plot(op.coordinate, op.loc[:, dbf], color = dbf_color_map[dbf], label = dbf)
-        ax.fill_between(op.coordinate, op.loc[:, dbf], color = dbf_color_map[dbf])
-
-    # dbf = 'YLL054C'
-    # if dbf in list(op):
-    #     ax.plot(op.coordinate, op.loc[:, dbf], color = dbf_color_map[dbf], label = dbf)
-    #     ax.fill_between(op.coordinate, op.loc[:, dbf], color = dbf_color_map[dbf])
-
-    # dbf = 'HAL9'
-    # if dbf in list(op):
-    #     ax.plot(op.coordinate, op.loc[:, dbf], color = dbf_color_map[dbf], label = dbf)
-    #     ax.fill_between(op.coordinate, op.loc[:, dbf], color = dbf_color_map[dbf])
-
     print(list(op))
     #plot all other dbfs
     for dbf in dbfs:
@@ -106,15 +90,8 @@ def plot_dbf_binding(op, dbf_color_map, nucDyad, ax):
         ax.plot(op.coordinate, op.loc[:, dbf], color = dbf_color_map[dbf], label = dbf)
         ax.fill_between(op.coordinate, op.loc[:, dbf], color = dbf_color_map[dbf])
 
-    # then plot Azf1
-    dbf = 'PDR3'
-    if dbf in list(op):
-        ax.plot(op.coordinate, op.loc[:, dbf], color = dbf_color_map[dbf], label = dbf)
-        ax.fill_between(op.coordinate, op.loc[:, dbf], color = dbf_color_map[dbf])
-        
 def plot_occupancy_profile(ax, op, chromo, coordinate_start, pwmFile, padding = 0, threshold = 0.1,
                            figsize=(18,4), file_name = None, dbf_color_map = None, nucDyad = False):
-#    plt.figure(figsize=figsize)
 
     if dbf_color_map == None:
         pwm = pickle.load(open(pwmFile, "rb"))

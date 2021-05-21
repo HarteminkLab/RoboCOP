@@ -21,7 +21,6 @@ def computeBackground(fastaFile):
         bg[2, 0] += seq.count("G") + seq.count("g")
         bg[3, 0] += seq.count("T") + seq.count("t")
     bg = bg/np.sum(bg)
-    # print("Calculated bg:", bg)
     return bg
 
 def computeUnknown(bgmotif):
@@ -44,17 +43,11 @@ def calculateKD(pwm, k):
 def getDBFconc(nucFile, pwmFile):
 
     pwm = pickle.load(open(pwmFile, "rb"), encoding = 'latin1')
-    # remove secondary motif
 
     pwm['background'] = {"matrix": computeBackground(nucFile)}
     pwm['unknown'] = {"matrix": computeUnknown(pwm['background']['matrix'])}
 
-    # # remove unknown
-    # pwm.pop('unknown_TF')
-
     dbf_conc = [(k, calculateKD(pwm, k)) for k in list(pwm.keys())]
-    # dbf_conc.append(('background', 1.0))
-    # dbf_conc.append(('nucleosome', 35))
     dbf_conc = dict(dbf_conc)
     dbf_conc['background'] = 1.0
     dbf_conc['nucleosome'] = 35
@@ -78,37 +71,20 @@ def getParamsMNase(mnaseFile, nucFile, tfFile, fragRange, tech = "MNase"):
         # get linker coordinates from nucleosome file
         segments = computeLinkers(nucFile)
         # compute NB parameters for counts in linker region
-        otherShort = computeMNaseBackground(mnaseFile, segments, fragRange[1], offset) # {'mu': 0.12367589449681342, 'phi': 0.12745604889725998}
-        otherLong = computeMNaseBackground(mnaseFile, segments, fragRange[0], offset) # {'mu': 0.49634271906346195, 'phi': 0.25951075063267554}
+        otherShort = computeMNaseBackground(mnaseFile, segments, fragRange[1], offset)
+        otherLong = computeMNaseBackground(mnaseFile, segments, fragRange[0], offset)
         mus, phis = computeMNaseNucMusPhis(mnaseFile, nucFile, fragRange[0], offset)
         nucLong = {}
-        # nucLong['mu'] = np.load('nucLongMu.npy')
-        # nucLong['phi'] = 0.4644386359048939
         nucLong['mu'] = mus
         nucLong['phi'] = np.mean(phis)
         nucLong['scale'] = 1
-        #np.save("nucLongMu", mus)
         nucShort = {'mu': otherShort['mu'], 'phi': otherShort['phi']}
         nucShort['scale'] = np.ones(147)
 
         # fit NB to counts in TF sites 
-        tfShort = computeMNaseTFPhisMus(mnaseFile, tfFile, fragRange[1], None, offset) # {'mu': 2.05080615363017, 'phi': 0.4957510592300852}
+        tfShort = computeMNaseTFPhisMus(mnaseFile, tfFile, fragRange[1], None, offset)
         print("Computed TF short:", tfShort)
         # long count distribution is same as background
         tfLong = {'mu': otherLong['mu'], 'phi': otherLong['phi']}
-        # newtfLong = computeMNaseTFPhisMus(mnaseFile, tfFile, fragRange[1], None)
-        # newnucShort = computeMNaseNucOneMusPhis(mnaseFile, nucFile, fragRange[1])
-        # print("oldShort:", otherShort)
-        # print("new nuc short:", newnucShort)
-        # print("oldLong:", otherLong)
-        # print("new tf long:", newtfLong)
-
-        # tfLong = newtfLong
-        # mus, phis = newnucShort
-        # nucShort = {'mu': mus, 'phi': phis}
-        # nucShort['scale'] = np.ones(147)
-        
-        # exit(0)
-        
         mnaseParams = {'nucLong': nucLong, 'nucShort': nucShort, 'otherLong': otherLong, 'otherShort': otherShort, 'tfLong': tfLong, 'tfShort': tfShort}
         return mnaseParams

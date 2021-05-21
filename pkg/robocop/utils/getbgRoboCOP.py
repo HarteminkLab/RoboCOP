@@ -11,12 +11,9 @@ from Bio import SeqIO
 from configparser import SafeConfigParser
 
 def getNucScores(coords, dirname, hmmconfig, chrm, chrSize): 
-    # scores = [0 for j in range(chrSize)]
     scores = np.zeros(chrSize)
-    # coords = coords[coords["chr"] == "chr" + roman.toRoman(chrm)]
     coords = coords[coords["chr"] == chrm]
     if coords.empty: 
-        # print("HERE")
         return scores
     idx = list(coords.index)
     unknown = []
@@ -31,7 +28,6 @@ def getNucScores(coords, dirname, hmmconfig, chrm, chrSize):
         start = int(coords.iloc[k]["start"]) - 1
         end = int(coords.iloc[k]["end"])
         k += 1
-        # pTable = np.load(dirname + "posterior_table.idx" + str(i) + ".npy")
         pTable = np.load(dirname + "posterior_and_emission.idx" + str(i) + ".npz")['posterior']
         # nuc center is 73 bases away from nuc_start
         if i == 0:
@@ -57,20 +53,16 @@ def getBG(dirname, chrSizes, hmmconfig):
     wrapperList = []
     for c in chrkeys:
         wrapperList.append((coords, dirname + "/tmpDir/", hmmconfig, c, chrSizes[c]))
-    # scores = list(map(getNucScoresWrapper, wrapperList))
     scores = []
     for c in range(len(chrkeys)): scores.extend(getNucScores(coords, dirname + "/tmpDir/", hmmconfig, chrkeys[c], chrSizes[chrkeys[c]]))
 
     df = pandas.DataFrame(columns = ["chr", "pos", "score"])
     chrs = sum(list(map(lambda x: [x for i in range(chrSizes[x])], chrkeys)), [])
     pos = sum(list(map(lambda x: [i + 1 for i in range(chrSizes[x])], chrkeys)), [])
-    # scoresAll = sum(scores, [])
     df["chr"] = chrs
     df["pos"] = pos
-    # print(len(pos), len(scores))
     df["score"] = scores
     df.to_hdf(dirname + "/RoboCOP_outputs/bgScores.h5", key = "df", mode = "w")
-    #pickle.dump(score, open(dirname + "/RoboCOP_outputs/nucCenterScoresRoboCOP.p", "wb"))
     
 
 if __name__ == '__main__':
@@ -99,6 +91,3 @@ if __name__ == '__main__':
     # first get the nucleosome dyad score for every position
     if not os.path.exists(dirname + "/RoboCOP_outputs/bgScores.h5"): getBG(dirname, chrSizes, hmmconfig)
 
-    # # get nucleosome dyads using greedy approach
-    # if not os.path.exists(dirname + "/RoboCOP_outputs/nucleosome_dyads.h5"): getNucPos(dirname, chrSizes)
-    

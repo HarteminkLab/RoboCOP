@@ -165,7 +165,6 @@ if __name__ == '__main__':
         config = SafeConfigParser()
         config.read(configFile)
         nProcs = int(config.get("main", "nProcs"))
-        # pool = Pool(processes = nProcs)
         if not config.has_option("main", "bamFile"): bamFile = None
         else: bamFile = config.get("main", "bamFile")
 

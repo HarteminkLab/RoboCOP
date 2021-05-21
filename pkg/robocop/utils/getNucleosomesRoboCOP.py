@@ -11,12 +11,9 @@ from Bio import SeqIO
 from configparser import SafeConfigParser
 
 def getNucScores(coords, dirname, hmmconfig, chrm, chrSize): 
-    # scores = [0 for j in range(chrSize)]
     scores = np.zeros(chrSize)
-    # coords = coords[coords["chr"] == "chr" + roman.toRoman(chrm)]
     coords = coords[coords["chr"] == chrm]
     if coords.empty: 
-        # print("HERE")
         return scores
     idx = list(coords.index)
     unknown = []
@@ -31,7 +28,6 @@ def getNucScores(coords, dirname, hmmconfig, chrm, chrSize):
         start = int(coords.iloc[k]["start"]) - 1
         end = int(coords.iloc[k]["end"])
         k += 1
-        # pTable = np.load(dirname + "posterior_table.idx" + str(i) + ".npy")
         pTable = np.load(dirname + "posterior_and_emission.idx" + str(i) + ".npz", allow_pickle = True)['posterior']
         print(i, pTable)
         # nuc center is 73 bases away from nuc_start
@@ -58,20 +54,16 @@ def getNucs(dirname, chrSizes, hmmconfig):
     wrapperList = []
     for c in chrkeys:
         wrapperList.append((coords, dirname + "/tmpDir/", hmmconfig, c, chrSizes[c]))
-    # scores = list(map(getNucScoresWrapper, wrapperList))
     scores = []
     for c in range(len(chrkeys)): scores.extend(getNucScores(coords, dirname + "/tmpDir/", hmmconfig, chrkeys[c], chrSizes[chrkeys[c]]))
 
     df = pandas.DataFrame(columns = ["chr", "dyad", "score"])
     chrs = sum(list(map(lambda x: [x for i in range(chrSizes[x])], chrkeys)), [])
     pos = sum(list(map(lambda x: [i + 1 for i in range(chrSizes[x])], chrkeys)), [])
-    # scoresAll = sum(scores, [])
     df["chr"] = chrs
     df["dyad"] = pos
-    # print(len(pos), len(scores))
     df["score"] = scores
     df.to_hdf(dirname + "/RoboCOP_outputs/nucCenterScores.h5", key = "df", mode = "w")
-    #pickle.dump(score, open(dirname + "/RoboCOP_outputs/nucCenterScoresRoboCOP.p", "wb"))
     
 
 # get nucleosome dyad predictions using a greedy approach from posterior decoding
@@ -89,7 +81,6 @@ def getNucPos(dirname, chrSizes):
         while len(nucchr[nucchr['score'] > 0]):
             i = np.argmax(nucchr["score"])
             print(i, j, len(nucchr[nucchr['score'] > 0]))
-            # if nucchr.iloc[i]["score"] <= 1e-1000: break
             # replace surrounding scores with 0
             nc = nucchr.iloc[i]['score']
             idxcount = 0
@@ -98,12 +89,10 @@ def getNucPos(dirname, chrSizes):
                     idxcount += 1
                     arrchr[k] = 1
                 nucchr.at[k, 'score'] = 0
-            # print(idxcount)
             if idxcount < 58 + 59: continue
             else: print("Accept", idxcount)
             idx[chrkeys[j]].append(i)
             idxscores[chrkeys[j]].append(nc)
-            # nucchr.iloc[max(0, i - 58): i + 59, "score"] = 0
             
     # create data frame
     chrs = []
@@ -122,46 +111,6 @@ def getNucPos(dirname, chrSizes):
     print(a)
     a.to_hdf(dirname + "/RoboCOP_outputs/nucleosome_dyads_new.h5", key = "df", mode = "w")
 
-'''
-# get nucleosome dyad predictions using a greedy approach from posterior decoding
-def getNucPos(dirname, chrSizes):
-    nucs = pandas.read_hdf(dirname + "/RoboCOP_outputs/nucCenterScores.h5", key = "df", mode = "r")
-    idx = {}
-    idxscores = {}
-    chrkeys = sorted(list(chrSizes.keys()))
-    for j in range(len(chrkeys)):
-        idx[chrkeys[j]] = []
-        idxscores[chrkeys[j]] = []
-        nucchr = nucs[nucs["chr"] == chrkeys[j]]
-        nucchr = nucchr.reset_index()
-        while 1:
-            i = np.argmax(nucchr["score"])
-            print(i, j)
-            if nucchr.iloc[i]["score"] <= 1e-1000: break
-            idx[chrkeys[j]].append(i)
-            idxscores[chrkeys[j]].append(nucchr.iloc[i]["score"])
-            # replace surrounding scores with 0
-            for k in range(max(0, i - 58), i + 59):
-                nucchr.at[k, 'score'] = 0
-            # nucchr.iloc[max(0, i - 58): i + 59, "score"] = 0
-            
-    # create data frame
-    chrs = []
-    dyads = []
-    scores = []
-    for i in chrSizes.keys():
-        for j in range(len(idx[i])):
-            chrs.append(i)
-            dyads.append(int(idx[i][j]))
-            scores.append(idxscores[i][j])
-    a = pandas.DataFrame(columns = ["chr", "dyad", "score"])
-    a["chr"] = chrs
-    a["dyad"] = dyads
-    a["score"] = scores
-    a = a.sort_values(by = "score", ascending = False)
-    print(a)
-    a.to_hdf(dirname + "/RoboCOP_outputs/nucleosome_dyads.h5", key = "df", mode = "w")
-'''
 if __name__ == '__main__':
     
     if len(sys.argv) != 2:
@@ -189,6 +138,5 @@ if __name__ == '__main__':
     if not os.path.exists(dirname + "/RoboCOP_outputs/nucCenterScores.h5"): getNucs(dirname, chrSizes, hmmconfig)
 
     # get nucleosome dyads using greedy approach
-    # if not os.path.exists(dirname + "/RoboCOP_outputs/nucleosome_dyads.h5"): getNucPos(dirname, chrSizes)
-    getNucPos(dirname, chrSizes)
+    if not os.path.exists(dirname + "/RoboCOP_outputs/nucleosome_dyads.h5"): getNucPos(dirname, chrSizes)
     print("Done")

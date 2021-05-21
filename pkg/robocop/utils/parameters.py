@@ -91,7 +91,6 @@ def computeMNaseNucOneMusPhis(bamFile, nucleosomeFile, fragRange):
             # ignore chrXII
             if l[0] == "chrXII": continue
             regions = samfile.fetch(l[0], max(0, start - 200), stop + 200)
-            # regions = samfile.fetch(l[0], max(0, start - 200), stop + 200)
             for r in regions:
                 if r.template_length <= 0: continue
                 rStart = r.reference_start + 1
@@ -127,7 +126,6 @@ def computeMNaseNucMusPhis(bamFile, nucleosomeFile, fragRange, offset = 0):
             # ignore chrXII
             if l[0] == "chrXII": continue
             regions = samfile.fetch(l[0], max(0, start - 200), stop + 200)
-            # regions = samfile.fetch(l[0], max(0, start - 200), stop + 200)
             for r in regions:
                 if r.template_length - 2*offset <= 0: continue
                 rStart = r.reference_start + 1 + offset
@@ -139,7 +137,6 @@ def computeMNaseNucMusPhis(bamFile, nucleosomeFile, fragRange, offset = 0):
                 counts[int(m - start)] += 1
             empiricalCounts.append(counts)
     empiricalCounts = np.array(empiricalCounts)[:, :147]    
-    #np.savetxt("/usr/xtmp/sneha/tmpDir/mnaseCountsNuc.txt", empiricalCounts)
     mus = []
     phis = []
     # nucleosomal DNA is 147 bases long
@@ -150,11 +147,6 @@ def computeMNaseNucMusPhis(bamFile, nucleosomeFile, fragRange, offset = 0):
         params = params.rx2("estimate")
         mus.append(params.rx2("mu")[0])
         phis.append(params.rx2("size")[0])
-    # np.savetxt("/usr/xtmp/sneha/tmpDir/mnaseEcounts.txt", empiricalCounts)
-    # np.savetxt("/usr/xtmp/sneha/tmpDir/mnaseCountsNucMus.txt", mus)
-    # np.savetxt("/usr/xtmp/sneha/tmpDir/mnaseCountsNucPhis.txt", phis)
-    # exit(0)
-
     return mus, phis
 
 def computeMNaseBackground(bamFile, segments, fragRange, offset = 0):
@@ -167,7 +159,6 @@ def computeMNaseBackground(bamFile, segments, fragRange, offset = 0):
         minStart = s['start']
         maxEnd = s['stop'] + fragRange[1]
         region = samfile.fetch(s['chrm'], minStart - 200, maxEnd + 200)
-        # region = samfile.fetch("chr" + roman.toRoman(s['chrm']), minStart - 200, maxEnd + 200)
         count = [0 for i in range(s['stop'] - s['start'])]
         for i in region:
             if i.template_length - 2*offset <= 0: continue
@@ -201,7 +192,6 @@ def computeMNaseTFPhisMus(bamFile, csvFile, fragRange, filename, offset = 0):
     Negative binomial distribution for short fragments at TF
     binding sites.
     """
-    #print("Getting short frags")
     TFs = ["ABF1", "REB1"]
     tfCounts = []
     nucCounts = []
@@ -215,9 +205,7 @@ def computeMNaseTFPhisMus(bamFile, csvFile, fragRange, filename, offset = 0):
             chrm = l[0]
             countMid = [0 for i in range(maxEnd - minStart + 1)]
             countNuc = [0 for i in range(maxEnd - minStart + 1)]
-            #print(chrm, minStart - fragRange[1] - 1, maxEnd + fragRange[1] - 1)
             region = samfile.fetch(chrm, minStart - fragRange[1] - 1, maxEnd + fragRange[1] - 1)
-            # region = samfile.fetch("chr" + roman.toRoman(chrm), minStart - fragRange[1] - 1, maxEnd + fragRange[1] - 1)
             for i in region:
                 if i.template_length - 2*offset >= 0:
                     start = i.reference_start + 1 + offset
@@ -230,7 +218,6 @@ def computeMNaseTFPhisMus(bamFile, csvFile, fragRange, filename, offset = 0):
             tfCounts = tfCounts + countMid
             nucCounts = nucCounts + countNuc
     np.save("/usr/xtmp/sneha/tmpDir/mnaseCountstf", tfCounts)
-    # exit(0)
     try:
         fitdist = importr('fitdistrplus')
         p = fitdist.fitdist(vectors.IntVector(tfCounts), 'nbinom', method = "mle")

@@ -522,7 +522,7 @@ def viterbi_decoding(d, dshared):
     return 0
 
 
-def center_for_dbf_probs(d, dshared): #, lock = None):
+def center_for_dbf_probs(d, dshared): 
     """
     the length of nucleosome padding is defined here as 0, for now
     This may need to re implemented in C for speed 

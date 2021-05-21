@@ -27,8 +27,6 @@ def getNucleotideSequence(fastaFile, chromosome, start = 0, stop = 0):
     for fs in fastaSeq:
         fastaSequence[fs.name] = fs.seq
         sequenceLengths[fs.name] = len(fs.seq)
-    #print("chr:", chromosome)
-    #print("Stop", stop, "len", sequenceLengths[chromosome])
     if stop > sequenceLengths[chromosome]:
         print("ERROR: Invalid stop position for chromosome", chromosome, start, stop, sequenceLengths[chromosome])
         exit(1)

@@ -26,7 +26,6 @@ def getScores(coords, dirname, hmmconfig, chrm, tf, chrSize):
         start = int(coords.iloc[k]["start"]) - 1
         end = int(coords.iloc[k]["end"])
         k += 1
-        # pTable = np.load(dirname + "posterior_table.idx" + str(i) + ".npy")
         pTable = np.load(dirname + "posterior_and_emission.idx" + str(i) + ".npz")['posterior']
         for j in range(len(tf)):
             if i == 0:
@@ -57,10 +56,6 @@ def getTFs(dirname, chrSizes, tfs, hmmconfig):
     chrkeys = sorted(list(chrSizes.keys()))
     for tf in tfs:
         tfIndex = list(filter(lambda x: (hmmconfig["tfs"][x].split("_")[0]).upper() == tf, range(len(hmmconfig["tfs"]))))
-        # tfIndex = list(filter(lambda x: hmmconfig['tfs'][x]  == 'Rap1_telomeric', range(len(hmmconfig["tfs"]))))
-        # tfIndex = list(filter(lambda x: hmmconfig['tfs'][x]  == 'Rap1_motif1', range(len(hmmconfig["tfs"]))))
-        # tfIndex = list(filter(lambda x: hmmconfig['tfs'][x]  == 'Rap1_motif2', range(len(hmmconfig["tfs"]))))
-        # tfIndex = list(filter(lambda x: hmmconfig['tfs'][x]  == 'Rap1_zhu', range(len(hmmconfig["tfs"]))))
         motifWidths = getMotifWidths(hmmconfig, tfIndex)
         scoresPos = [list(map(lambda x: [0 for j in range(chrSizes[i])], tfIndex) for i in chrkeys)]
         scoresNeg = [list(map(lambda x: [0 for j in range(chrSizes[i])], tfIndex) for i in chrkeys)]
@@ -97,10 +92,6 @@ def getTFs(dirname, chrSizes, tfs, hmmconfig):
         df["width"] = motifWidth.astype(int)
         df["score"] = scores
         df.to_hdf(dirname + "/RoboCOP_outputs/" + tf + "_scores.h5", key = 'df', mode = 'w')
-        # df.to_hdf(dirname + "/RoboCOP_outputs/" + "Rap1_telomeric_scores.h5", key = 'df', mode = 'w')
-        # df.to_hdf(dirname + "/RoboCOP_outputs/" + "Rap1_motif1_scores.h5", key = 'df', mode = 'w')
-        # df.to_hdf(dirname + "/RoboCOP_outputs/" + "Rap1_motif2_scores.h5", key = 'df', mode = 'w')
-        # df.to_hdf(dirname + "/RoboCOP_outputs/" + "Rap1_zhu_scores.h5", key = 'df', mode = 'w')
         print("Writing")
 
 # filter out non zero and overlapping tf binding sites 
@@ -114,19 +105,16 @@ def getTFPosMod(dirname, chrSizes, tfs, hmmconfig):
         idxscores = {}
         chrkeys = sorted(list(chrSizes.keys()))
         for j in range(len(chrkeys)):
-            #print(j)
             idx[chrkeys[j]] = []
             idxscores[chrkeys[j]] = []
             tfchr = tfscores[tfscores['chr'] == chrkeys[j]]
             tfchrlen = len(tfchr)
-            # tfends = np.array(tfchr['end'])
             tfscore = np.array(tfchr['score'])
             tfchr = tfchr.reset_index()
             while 1: 
                 i = np.argmax(tfscore)
                 print(i, j, tfscore[i], file = sys.stderr)
                 if tfscore[i] < 1e-1000: break
-                # df = df.append(tfchr.iloc[i], ignore_index = True)
                 # make that region 0
                 mstart = i
                 mend = tfchr.iloc[i]['end'] - 1
@@ -153,14 +141,12 @@ def getTFPos(dirname, chrSizes, tfs, hmmconfig):
         idxscores = {}
         chrkeys = sorted(list(chrSizes.keys()))
         for j in range(len(chrkeys)):
-            #print(j)
             idx[chrkeys[j]] = []
             idxscores[chrkeys[j]] = []
             tfchr = tfscores[tfscores['chr'] == chrkeys[j]]
             tfchr = tfchr.reset_index()
             while 1: 
                 i = np.argmax(tfchr["score"])
-                #print(i, j, file = sys.stderr)
                 if tfchr.iloc[i]["score"] < 1e-100: break
                 df = df.append(tfchr.iloc[i], ignore_index = True)
                 # make that region 0
@@ -169,10 +155,6 @@ def getTFPos(dirname, chrSizes, tfs, hmmconfig):
 
                 mask = ((tfchr['start'] <= mstart) & (tfchr['end'] >= mstart)) | ((tfchr['start'] <= mend) & (tfchr['end'] >= mend))
                 tfchr.loc[mask, 'score'] = 0
-                # for j in range(tfchr["score"].count()):
-                #     print(j)
-                #     if tfchr.iloc[j]['start'] <= mstart and tfchr.iloc[j]['end'] >= mstart: tfchr.at[j, 'score'] = 0
-                #     elif tfchr.iloc[j]['start'] <= mend and tfchr.iloc[j]['end'] >= mend: tfchr.at[j, 'score'] = 0
         df = df.sort_values(by = "score", ascending = False)
         df.to_hdf(dirname + "/RoboCOP_outputs/" + tf + ".h5", key = "df", mode = "w")
 
@@ -213,5 +195,3 @@ if __name__ == '__main__':
     if tfIdx: getTFs(dirname, chrSizes, [tfs[tfIdx]], hmmconfig)
     else: getTFs(dirname, chrSizes, tfs, hmmconfig)
 
-    # if tfIdx: getTFPosMod(dirname, chrSizes, [tfs[tfIdx]], hmmconfig)
-    # else: getTFPosMod(dirname, chrSizes, tfs, hmmconfig)

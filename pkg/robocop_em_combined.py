@@ -1,7 +1,5 @@
 import os
 import sys
-sys.path.append("/home/home3/sneha/.local/lib/python3.6/site-packages/")
-sys.path.append(os.getcwd())
 import robocop
 from robocop.utils.readWriteOps import *
 from robocop.utils.robocopExtras import *
@@ -128,7 +126,6 @@ def runROBOCOP_EM(coordFile, config, outDir, tmpDir, pool, mnaseFile, atacFile):
         print("Iter:", i, file = sys.stderr)
         # Baum-Welch on transition probabilities
         background_prob, _tf_prob, nucleosome_prob = update_transition_probs(dshared, segments, tmpDir, threshold)
-        # print("Probs:", background_prob, _tf_prob, nucleosome_prob)
         tf_prob = np.array([_tf_prob[_] for _ in np.array(sorted(_tf_prob.keys()), order = 'c')])
         robocop.set_transition(dshared, tf_prob, background_prob, nucleosome_prob)
         robocop.set_initial_probs(dshared)

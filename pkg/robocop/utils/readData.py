@@ -12,7 +12,6 @@ import pysam
 def getValuesMNaseOneFileFragmentRange(MNaseFile, chrm, minStart, maxEnd, fragRange, offset = 0):
     countMid = np.zeros(maxEnd - minStart + 1).astype(int)
     samfile = pysam.AlignmentFile(MNaseFile, "rb")
-    # region = samfile.fetch(str(chrm), max(0, minStart - fragRange[1] - 1), maxEnd + fragRange[1] - 1)
     region = samfile.fetch(chrm, max(0, minStart - fragRange[1] - 1), maxEnd + fragRange[1] - 1)
     for i in region:
         if i.template_length - 2*offset>= 0:

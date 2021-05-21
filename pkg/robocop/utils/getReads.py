@@ -11,7 +11,6 @@ def getNucSequence(nucFile, tmpDir, coords, idx = None):
         
     if nucFile:
         for i, r in coords.iterrows():
-            # print("Coords:", r['chr'], r['start'], r['end'])
             np.save(tmpDir + "nucleotides.idx" + str(i), np.array(getNucleotides.getNucleotideSequence(nucFile, r['chr'], r['start'], r['end'])))
     else: nucleotide_sequence = None
     return nucleotide_sequence
