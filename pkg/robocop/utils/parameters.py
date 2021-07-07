@@ -217,7 +217,6 @@ def computeMNaseTFPhisMus(bamFile, csvFile, fragRange, filename, offset = 0):
                     countMid[int((start + end)/2 - minStart)] += 1
             tfCounts = tfCounts + countMid
             nucCounts = nucCounts + countNuc
-    np.save("/usr/xtmp/sneha/tmpDir/mnaseCountstf", tfCounts)
     try:
         fitdist = importr('fitdistrplus')
         p = fitdist.fitdist(vectors.IntVector(tfCounts), 'nbinom', method = "mle")
