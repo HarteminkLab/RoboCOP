@@ -7,7 +7,7 @@
 
 from Bio import SeqIO
 import numpy as np
-import roman
+# import roman
 
 # Convert nucleotides to 0, 1, 2, 3
 def mapNucToInt(n):
