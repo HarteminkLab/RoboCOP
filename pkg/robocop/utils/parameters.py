@@ -1,6 +1,6 @@
 import numpy as np
 import pysam
-import roman
+# import roman
 import math
 import pandas
 from rpy2.rinterface_lib.embedded import RRuntimeError
@@ -73,7 +73,7 @@ def computeChrSegments(chrSizes):
     n = 5000
     for i in range(n):
         chrm = np.random.randint(1, 17)
-        start = np.random.randint(0, chrSizes['chr' + roman.toRoman(chrm)] - segmentSize)
+        start = np.random.randint(0, chrSizes[chrm] - segmentSize)
         segments.append({'chrm': chrm, 'start': start, 'stop': start + segmentSize})
     return segments
 
