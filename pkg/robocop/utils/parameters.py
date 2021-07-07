@@ -3,7 +3,7 @@ import pysam
 # import roman
 import math
 import pandas
-from rpy2.rinterface_lib.embedded import RRuntimeError
+from rpy2.rinterface import RRuntimeError
 from rpy2.robjects.packages import importr
 import rpy2.robjects.vectors as vectors
 import rpy2.robjects as ro
