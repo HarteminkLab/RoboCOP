@@ -60,7 +60,8 @@ if __name__ == '__main__':
         exit(0)
 
     outDir = (sys.argv)[1]
-
+    if outDir[-1] != '/': outDir = outDir + '/'
+    
     configFile = outDir + "/config.ini"
     config = configparser.SafeConfigParser()
     config.read(configFile)
