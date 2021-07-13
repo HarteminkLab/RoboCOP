@@ -10,7 +10,6 @@ import sys
 import re
 import pickle
 import random
-import roman
 import configparser
 from plotMNaseMidpoints import plotMidpointsAx
 
@@ -40,7 +39,7 @@ def plotOutput(filename, outDir, idx, pwmFile, dbf_color_map, chrm, start, end, 
 
     fig, ax = plt.subplots(3, 1, sharex = True, figsize = (19, 7))
     # plot MNase-seq
-    shortCounts, longCounts = plotMidpointsAx(ax[0], MNaseFile, "chr" + roman.toRoman(chrm), start, end, fragRangeShort, fragRangeLong, offset = offset)
+    shortCounts, longCounts = plotMidpointsAx(ax[0], MNaseFile, chrm, start, end, fragRangeShort, fragRangeLong, offset = offset)
     ax[1].plot(range(start - 1, end), shortCounts, color = 'blue')
     ax[1].plot(range(start - 1, end), longCounts, color = 'maroon')
     opTable = pd.read_csv(filename, sep = '\t', low_memory = False) # [700:2350]
@@ -87,7 +86,7 @@ if __name__ == '__main__':
         idxs = range(len(coords))
 
     for idx in idxs:
-        chrm = roman.fromRoman(coords.iloc[idx]["chr"][3:])
+        chrm = coords.iloc[idx]["chr"]
         start = int(coords.iloc[idx]["start"])
         end = int(coords.iloc[idx]["end"])
         d = pickle.load(open(outDir + "tmpDir/dict.idx" + str(idx) + ".pkl", "rb"))
