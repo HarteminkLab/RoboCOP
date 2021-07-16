@@ -82,7 +82,7 @@ def runROBOCOP_NO_EM(coordFile, config, outDir, tmpDir, trainOutDir, pool, dnase
     return likelihood
 
 if __name__ == '__main__':
-        if len(sys.argv) != 5:
+        if len(sys.argv) != 4:
                 print("Usage: python robocop_no_em.py <coordinate file> <trained output dir> <outputDir>")
                 exit(1)
         coordFile = sys.argv[1]
