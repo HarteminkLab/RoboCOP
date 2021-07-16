@@ -31,7 +31,7 @@ def getNucleotideSequence(fastaFile, chromosome, start = 0, stop = 0):
         print("ERROR: Invalid stop position for chromosome", chromosome, start, stop, sequenceLengths[chromosome])
         exit(1)
     if start <= 0:
-        print("ERROR: Invalid start position for chromosome", chromosome)
+        print("ERROR: Invalid start position for chromosome", chromosome, start, stop)
         exit(1)
 
     sequence = fastaSequence[chromosome][(start - 1) : stop]
