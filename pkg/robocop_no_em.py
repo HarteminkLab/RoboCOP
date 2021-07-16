@@ -14,13 +14,13 @@ import gc
 from multiprocessing import Pool, Manager
 
 # create posterior table for each segment
-def createInstances(dshared, mnaseParams, coords, cshared, tmpDir, nucleotide_sequence, pool):
+def createInstances(dshared, mnaseParams, coords, cshared, tmpDir, nucleotide_sequence, tech, pool):
     segments = len(coords)
     dshared['tmpDir'] = tmpDir
     dshared['nucleotides'] = nucleotide_sequence
     dshared['robocopC'] = cshared    
     pool.map(createInstance, [(t, dshared) for t in range(segments)])
-    if mnaseParams != None: list(map(updateMNaseEMMatNB, [(s, dshared, mnaseParams) for s in range(segments)]))
+    if mnaseParams != None: list(map(updateMNaseEMMatNB, [(s, dshared, mnaseParams, tech) for s in range(segments)]))
     pool.map(posterior_forward_backward_wrapper, [(t, dshared) for t in range(segments)])
     gc.collect()
     return dshared
@@ -70,7 +70,8 @@ def runROBOCOP_NO_EM(coordFile, config, outDir, tmpDir, trainOutDir, pool, dnase
         mnaseParams = None
     
     dshared = cfg
-    createInstances(dshared, mnaseParams, coords, cshared, tmpDir, nucleotide_sequence, pool)
+    tech = config.get("main", "tech")
+    createInstances(dshared, mnaseParams, coords, cshared, tmpDir, nucleotide_sequence, tech, pool)
     
     fLike = open(outDir + '/likelihood.txt', 'w')
     print("Likelihood before EM:", getLogLikelihood(segments, dshared['tmpDir']))
