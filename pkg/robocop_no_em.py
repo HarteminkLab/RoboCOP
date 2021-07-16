@@ -31,7 +31,7 @@ def runROBOCOP_NO_EM(coordFile, config, outDir, tmpDir, trainOutDir, pool, dnase
     fragRangeShort = tuple([int(x) for x in re.findall(r'\d+', config.get("main", "fragRangeShort"))])
     fragRange = (fragRangeLong, fragRangeShort)
     nucFile = config.get("main", "nucFile")
-    mnaseFiles = config.get("main", "mnaseFile")
+    mnaseFiles = config.get("main", "bamFile")
     cshared = config.get("main", "cshared")
 
     # chromosome segments in data frame
