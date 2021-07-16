@@ -89,9 +89,9 @@ if __name__ == '__main__':
         configFile = sys.argv[2]
         trainOutDir = (sys.argv)[3]
         outDir = (sys.argv)[4]
-        os.mkdir(outDir)
+        os.makedirs(outDir, exist_ok = True)
         tmpDir = outDir + "/tmpDir/"
-        os.mkdir(tmpDir)
+        os.makedirs(tmpDir, exist_ok = True)
 
         # read config file
         config = SafeConfigParser()
