@@ -83,20 +83,34 @@ def runROBOCOP_NO_EM(coordFile, config, outDir, tmpDir, trainOutDir, pool, dnase
 
 if __name__ == '__main__':
         if len(sys.argv) != 5:
-                print("Usage: python robocop_no_em.py <coordinate file> <config file> <trained output dir> <outputDir>")
+                print("Usage: python robocop_no_em.py <coordinate file> <trained output dir> <outputDir>")
                 exit(1)
         coordFile = sys.argv[1]
-        configFile = sys.argv[2]
-        trainOutDir = (sys.argv)[3]
-        outDir = (sys.argv)[4]
+        trainOutDir = (sys.argv)[2]
+        outDir = (sys.argv)[3]
         os.makedirs(outDir, exist_ok = True)
         tmpDir = outDir + "/tmpDir/"
         os.makedirs(tmpDir, exist_ok = True)
+
+        configFile = trainOutDir + "/config.ini"
+
+        # copy config file
+        os.system("cp " + configFile + " " + outDir + "/config.ini") 
+        # copy coordinates file
+        os.system("cp " + coordFile + " " + outDir + "/coords.tsv") 
 
         # read config file
         config = SafeConfigParser()
         config.read(configFile)
         nProcs = int(config.get("main", "nProcs"))
         pool = Pool(processes = nProcs)
+
+        configFile = outDir + "/config.ini"
+
+        print("RoboCOP: model fitting ...")
+        print("Coordinates: " + coordFile)
+        print("Config file: " + configFile)
+        print("Trained dir: " + trainOutDir)
+        print("Output dir: " + outDir)
 
         runROBOCOP_NO_EM(coordFile, config, outDir, tmpDir, trainOutDir, pool)
