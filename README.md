@@ -74,5 +74,5 @@ use the learned parameters to perform posterior decoding on larger
 genomic regions.
 
 ```
- python robocop_no_em.py <coordinates file> <config file> <output directory with learned parameters -- example OutDir> <new output directory -- example NewOutDir>
+ python robocop_no_em.py <coordinates file> <output directory with learned parameters -- example OutDir> <new output directory -- example NewOutDir>
 ```
