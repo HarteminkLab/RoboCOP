@@ -192,14 +192,14 @@ def computeMNaseTFPhisMus(bamFile, csvFile, fragRange, filename, offset = 0):
     Negative binomial distribution for short fragments at TF
     binding sites.
     """
-    TFs = ["ABF1", "REB1"]
+    # TFs = ["ABF1", "REB1"]
     tfCounts = []
     nucCounts = []
     samfile = pysam.AlignmentFile(bamFile, "rb")
     with open(csvFile) as infile:
         for line in infile:
             l = line.strip().split()
-            if l[3] not in TFs: continue
+            # if l[3] not in TFs: continue
             minStart = int(l[1])
             maxEnd = int(l[2])
             chrm = l[0]
