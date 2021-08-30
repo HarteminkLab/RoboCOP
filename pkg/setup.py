@@ -4,7 +4,7 @@ from setuptools import setup, Extension
 
 setup(
     name='robocop',
-    version='0.1.0',
+    version='1.0.0',
     description='robocop, a multivariate hidden Markov model designed to infer regulatory protein binding probability along the genome using nucleotide sequence and MNase-seq.',
     author='Sneha Mitra and Jianling Zhong',
     author_email='sneha@cs.duke.edu',
