@@ -1,21 +1,18 @@
+import h5py
 import pickle
 import numpy as np
 
 # save dictionary
-def dumpIdx(x, dirname):
-    xt = {'segment': x['segment'], 'log_likelihood': x['log_likelihood']}
-    with open(dirname + "dict.idx" + str(x['segment']) + ".pkl", "wb") as writeFile:
-        pickle.dump(xt, writeFile, pickle.HIGHEST_PROTOCOL)
-    # Saving compressed posterior and data emission matrix
-    np.savez_compressed(dirname + "posterior_and_emission.idx" + str(x['segment']), posterior = x['posterior_table'], emission = x['data_emission_matrix'])
+def dumpIdx(x, info_file): # dirname):
+    k = "segment_" + str(x['segment'])
+    if k not in info_file.keys():
+        g = info_file.create_group(k)
+    else:
+        g = info_file[k]
+    g.attrs['segment'] = x['segment']
+    if x['log_likelihood'] is not None: g.attrs['log_likelihood'] = x['log_likelihood']
+    g.attrs['chr'] = x['chr']
+    g.attrs['start'] = x['start']
+    g.attrs['end'] = x['end']
+    g.attrs['n_obs'] = x['n_obs']
 
-# load dictionary for a particular segment
-def loadIdx(dirname, segment):
-    with open(dirname + "dict.idx" + str(segment) + ".pkl", "rb") as readFile:
-        x = pickle.load(readFile)
-    # load compressed matrix
-    d = np.load(dirname + "posterior_and_emission.idx" + str(x['segment']) + ".npz", allow_pickle = True)
-    x['posterior_table'] = d['posterior']
-    x['data_emission_matrix'] = d['emission']
-    return x
-    

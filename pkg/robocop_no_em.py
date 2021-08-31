@@ -7,35 +7,33 @@ import pickle
 import os
 import re
 import sys
-from configparser import SafeConfigParser
+import configparser
 import robocop.utils.getReads as getReads
 import pandas
 import gc
-from multiprocessing import Pool, Manager
 
 # create posterior table for each segment
-def createInstances(dshared, mnaseParams, coords, cshared, tmpDir, nucleotide_sequence, tech, pool):
-    segments = len(coords)
+def createInstances(dshared, mnaseParams, coords, cshared, tmpDir, nucleotide_sequence, segment, tech):
+
     dshared['tmpDir'] = tmpDir
     dshared['nucleotides'] = nucleotide_sequence
-    dshared['robocopC'] = cshared    
-    pool.map(createInstance, [(t, dshared) for t in range(segments)])
-    if mnaseParams != None: list(map(updateMNaseEMMatNB, [(s, dshared, mnaseParams, tech) for s in range(segments)]))
-    pool.map(posterior_forward_backward_wrapper, [(t, dshared) for t in range(segments)])
+    dshared['robocopC'] = cshared
+    createInstance((segment, dshared, coords['chr'], coords['start'], coords['end']))
+    if mnaseParams != None: updateMNaseEMMatNB((segment, dshared, mnaseParams, tech))
+    posterior_forward_backward_wrapper((segment, dshared))
     gc.collect()
     return dshared
     
-def runROBOCOP_NO_EM(coordFile, config, outDir, tmpDir, trainOutDir, pool, dnaseFiles = ""):
+def runROBOCOP_NO_EM(coords, config, outDir, tmpDir, info_file_name, trainOutDir, mnaseFiles, dnaseFiles = ""):
+
+    info_file = h5py.File(info_file_name, mode = 'w') 
 
     fragRangeLong = tuple([int(x) for x in re.findall(r'\d+', config.get("main", "fragRangeLong"))])
     fragRangeShort = tuple([int(x) for x in re.findall(r'\d+', config.get("main", "fragRangeShort"))])
     fragRange = (fragRangeLong, fragRangeShort)
     nucFile = config.get("main", "nucFile")
-    mnaseFiles = config.get("main", "bamFile")
+    tech = config.get("main", "tech")
     cshared = config.get("main", "cshared")
-
-    # chromosome segments in data frame
-    coords = pandas.read_csv(coordFile, sep = "\t")
 
     # get info from learned model
     cfg = pickle.load(open(trainOutDir + "/HMMconfig.pkl", "rb"), encoding = 'latin1')
@@ -50,13 +48,13 @@ def runROBOCOP_NO_EM(coordFile, config, outDir, tmpDir, trainOutDir, pool, dnase
     dbf_conc['nucleosome'] = cfg['nucleosome_prob']
 
     # read nucleotide sequence and return 1 if successful
-    nucleotide_sequence = getReads.getNucSequence(nucFile, tmpDir, coords)
+    nucleotide_sequence = getReads.getNucSequence(nucFile, tmpDir, info_file, coords)
     # read MNase-seq midpoint counts of long and short fragments
-    mnase_data_long, mnase_data_short = getReads.getMNase(mnaseFiles, tmpDir, coords, fragRange)
+    mnase_data_long, mnase_data_short = getReads.getMNase(mnaseFiles, tmpDir, info_file, coords, fragRange, tech = tech)
 
     # make t copies of each tf_prob for every timepoint -- 1 timepoint
-    timepoints = len(coords)
-    segments = len(coords)
+    timepoints = 1
+    segments = 1
     tf_prob = dict()
     for i in list(dbf_conc.keys()):
         if i != 'nucleosome' and i != 'background':
@@ -70,49 +68,22 @@ def runROBOCOP_NO_EM(coordFile, config, outDir, tmpDir, trainOutDir, pool, dnase
         mnaseParams = None
     
     dshared = cfg
-    tech = config.get("main", "tech")
-    createInstances(dshared, mnaseParams, coords, cshared, tmpDir, nucleotide_sequence, tech, pool)
+    dshared['info_file'] = info_file
+
+    for idx, r in coords.iterrows():
+        createInstances(dshared, mnaseParams, r, cshared, tmpDir, nucleotide_sequence, idx, tech)
+
     
-    fLike = open(outDir + '/likelihood.txt', 'w')
-    print("Likelihood before EM:", getLogLikelihood(segments, dshared['tmpDir']))
-    print("Exiting before EM")
-
-    likelihood = getLogLikelihood(segments, dshared['tmpDir'])
-    print("Likelihood after EM:", likelihood) 
-    return likelihood
-
 if __name__ == '__main__':
-        if len(sys.argv) != 4:
-                print("Usage: python robocop_no_em.py <coordinate file> <trained output dir> <outputDir>")
-                exit(1)
+    if len(sys.argv) < 4:
+        print("Usage: python robocop_no_em.py <coordinate file> <trained output directory> <output directory> <index -- optional> <total splits -- optional>")
+        exit(1)
+    coordFile = sys.argv[1]
+    trainOutDir = (sys.argv)[2]
+    outDir = (sys.argv)[3]
+        
+    # split coords to run in parallel
+    if len(sys.argv) == 6:
+        idx = int((sys.argv)[4])
+        total = int((sys.argv)[5])
 
-                
-        coordFile = sys.argv[1]
-        trainOutDir = (sys.argv)[2]
-        outDir = (sys.argv)[3]
-        os.makedirs(outDir, exist_ok = True)
-        tmpDir = outDir + "/tmpDir/"
-        os.makedirs(tmpDir, exist_ok = True)
-
-        configFile = trainOutDir + "/config.ini"
-
-        # copy config file
-        os.system("cp " + configFile + " " + outDir + "/config.ini") 
-        # copy coordinates file
-        os.system("cp " + coordFile + " " + outDir + "/coords.tsv") 
-
-        # read config file
-        config = SafeConfigParser()
-        config.read(configFile)
-        nProcs = int(config.get("main", "nProcs"))
-        pool = Pool(processes = nProcs)
-
-        configFile = outDir + "/config.ini"
-
-        print("RoboCOP: model fitting ...")
-        print("Coordinates: " + coordFile)
-        print("Config file: " + configFile)
-        print("Trained dir: " + trainOutDir)
-        print("Output dir: " + outDir)
-
-        runROBOCOP_NO_EM(coordFile, config, outDir, tmpDir, trainOutDir, pool)

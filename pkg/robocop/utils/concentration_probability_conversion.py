@@ -53,7 +53,7 @@ def convert_to_prob(dbf_conc, pwm):
             motif_len.append(147)
             motif_conc.append(dbf_conc['nucleosome'])
         elif dbf in pwm:
-            motif_len.append(pwm[dbf]['matrix'].shape[1])
+            motif_len.append(pwm[dbf].shape[1])
             motif_conc.append(dbf_conc[dbf])
         else:
             sys.exit('error: %s not found' % dbf)

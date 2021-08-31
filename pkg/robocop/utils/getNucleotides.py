@@ -7,7 +7,6 @@
 
 from Bio import SeqIO
 import numpy as np
-# import roman
 
 # Convert nucleotides to 0, 1, 2, 3
 def mapNucToInt(n):
@@ -17,7 +16,9 @@ def mapNucToInt(n):
         return 1
     elif n == 'G' or n == 'g':
         return 2
-    else: return 3
+    elif n == 'T' or n == 't':
+        return 3
+    else: return 4 # N nucleotide
 
 # extract nucleotide sequence for given chromosome, start and stop                                                                                                                                          
 def getNucleotideSequence(fastaFile, chromosome, start = 0, stop = 0):
@@ -31,7 +32,7 @@ def getNucleotideSequence(fastaFile, chromosome, start = 0, stop = 0):
         print("ERROR: Invalid stop position for chromosome", chromosome, start, stop, sequenceLengths[chromosome])
         exit(1)
     if start <= 0:
-        print("ERROR: Invalid start position for chromosome", chromosome, start, stop)
+        print("ERROR: Invalid start position for chromosome", chromosome)
         exit(1)
 
     sequence = fastaSequence[chromosome][(start - 1) : stop]

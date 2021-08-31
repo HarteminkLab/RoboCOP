@@ -121,7 +121,6 @@ int build_emission_mat_from_pwm(
     for(i = 0; i < n_obs; i++) {
         for(j = 0; j < silent_states_begin; j++) {
             emission_mat[I(i, j, n_states)] = pwm[j * alphabet_length + sequence[i]];
-	    //if(emission_mat[I(i, j, n_states)] == 0) printf("%d, %d, %lf, %lf, %ld\n", i, j, emission_mat[I(i, j, n_states)], pwm[j * alphabet_length + sequence[i]], sequence[i]);
         }
         for(j = silent_states_begin; j < n_states; j++) {
             emission_mat[I(i, j, n_states)] = 1.0;
@@ -178,7 +177,6 @@ void set_initial_probs( long *motif_starts, long *motif_lens,
   }
   
   if (nuc_present) {
-    // fprintf(stderr, "setting initial_probs, nuc_len=%d\n", nuc_len);
     double p = transition_matrix[I(silent_states_begin, nuc_start, n_states)];
 
     if(only_allow_start_from_motif_1st_position) {
@@ -226,14 +224,6 @@ void set_initial_probs( long *motif_starts, long *motif_lens,
 
   }
   
-  // the initial prob of the start of a motif should  equal its 
-  // concentration. it should not be normalized
-  // if using prob, the prob should be normalize before passing
-  // into the code here
-  // for (i = 0; i < silent_states_begin; i++) {
-  //   initial_probs[i] /= sum;
-  // }
-  /* assert(abs(sum - 1.0) < 0.00000001); */
 }
 
 
@@ -255,19 +245,6 @@ void find_parents_and_children(long* parents, long* children, long* n_parents, l
         n_children[i]++;
       }
     }
-
-    //fprintf(stderr, "state %d has %d parents, %d children\n", i, n_parents[i], n_children[i]);
-
-    // for (j = silent_states_begin; j < n_states; j++) {
-    //   if (fetch_transition_prob(model_def, j, i) != 0.0) {
-    //     parents[n_parents] = j;
-    //     n_parents++;
-    //   }
-    //   if (fetch_transition_prob(model_def, i, j) != 0.0) {
-    //     children[n_children] = j;
-    //     n_children++;
-    //   }
-    // }
 
   }
 }

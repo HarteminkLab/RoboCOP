@@ -19,3 +19,6 @@ analysis/working_config.ini
 *slurm*
 pkg/core
 */checkAllIfPresent.py
+*/gccCompile
+*/librobocop.so
+*/.ipynb_checkpoints*

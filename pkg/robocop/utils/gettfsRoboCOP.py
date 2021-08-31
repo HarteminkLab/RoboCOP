@@ -109,20 +109,23 @@ def getTFPosMod(dirname, chrSizes, tfs, hmmconfig):
             tfchr = tfscores[tfscores['chr'] == chrkeys[j]]
             tfchrlen = len(tfchr)
             tfscore = np.array(tfchr['score'])
+            tfscoreKeep = np.zeros(len(tfscore))
             tfchr = tfchr.reset_index()
             while 1: 
                 i = np.argmax(tfscore)
-                if tfscore[i] < 1e-1000: break
-                # make that region 0
+                print("Score:", i, j, tfscore[i], tfscore[i] < 1e-1000, np.isinf(np.log(tfscore[i])), file = sys.stderr)
+                if tfscore[i] < 1e-1000 or np.isinf(np.log(tfscore[i])): break
                 mstart = i
                 mend = tfchr.iloc[i]['end'] - 1
                 mwidth = mend - mstart
 
                 segstart = max(mstart - mwidth, 0)
                 segend = min(mend + mwidth, tfchrlen)
+                tfsc = tfscore[i]
                 tfscore[segstart : segend] = 0
-        
-            tfchr['score'] = tfscore
+                tfscoreKeep[(segstart + segend)//2] = tfsc
+                
+            tfchr['score'] = tfscoreKeep
             df = df.append(tfchr, ignore_index = True)
 
         df = df.sort_values(by = "score", ascending = False)
@@ -143,9 +146,11 @@ def getTFPos(dirname, chrSizes, tfs, hmmconfig):
             idxscores[chrkeys[j]] = []
             tfchr = tfscores[tfscores['chr'] == chrkeys[j]]
             tfchr = tfchr.reset_index()
-            while 1: 
+            while 1:
+                
                 i = np.argmax(tfchr["score"])
                 if tfchr.iloc[i]["score"] < 1e-100: break
+                print("Score:", tfchr.iloc[i]["score"])
                 df = df.append(tfchr.iloc[i], ignore_index = True)
                 # make that region 0
                 mstart = tfchr.iloc[i]['start']
@@ -162,7 +167,7 @@ if __name__ == '__main__':
     if len(sys.argv) < 2:
         print("Usage: python getNucleosomesRoboCOP.py <RoboCOP output dir> <TF -- optional>")
         exit(0)
-    
+
     dirname = (sys.argv)[1]
     configFile = dirname + "/config.ini"
 
@@ -187,9 +192,14 @@ if __name__ == '__main__':
     tfs = list(filter(lambda x: x != "UNKNOWN" and x != "BACKGROUND", tfs))
     tfs.sort()
 
+    print(tfs)
+    print(tfs.index('MCM1'))
+
     if len(sys.argv) == 3: tfIdx = int((sys.argv)[2])
     else: tfIdx = None
 
     if tfIdx: getTFs(dirname, chrSizes, [tfs[tfIdx]], hmmconfig)
     else: getTFs(dirname, chrSizes, tfs, hmmconfig)
 
+    if tfIdx: getTFPosMod(dirname, chrSizes, [tfs[tfIdx]], hmmconfig)
+    else: getTFPosMod(dirname, chrSizes, tfs, hmmconfig)

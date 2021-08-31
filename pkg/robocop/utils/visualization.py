@@ -1,5 +1,5 @@
 """
-Take the CSV file generated using function print_posterior_binding_probability()
+Take the data frame generated using function get_posterior_binding_probability_df()
 and plot the binding landscape. Plots on the given axis handle
 """
 
@@ -7,9 +7,6 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-import random
-import pickle
-random.seed(100)
 
 ########### some internal configurations ##############
 annotate_ymin = -0.2 
@@ -74,11 +71,13 @@ def plot_dbf_binding(op, dbf_color_map, nucDyad, ax):
             ax.plot(op.coordinate, op.loc[:, 'nucleosome'], color = dbf_color_map['nucleosome'], label = 'nuc')
             ax.fill_between(op.coordinate, op.loc[:, 'nucleosome'], color = dbf_color_map['nucleosome'])
 
-    # plot unknown next
+
+    # plot unknown first
     dbf = 'unknown'
     if dbf in list(op):
         ax.plot(op.coordinate, op.loc[:, dbf], color = dbf_color_map[dbf], label = dbf, alpha = 0.5)
         ax.fill_between(op.coordinate, op.loc[:, dbf], color = dbf_color_map[dbf], alpha = 0.5)
+
 
     #plot all other dbfs
     for dbf in dbfs:
@@ -88,22 +87,10 @@ def plot_dbf_binding(op, dbf_color_map, nucDyad, ax):
         ax.plot(op.coordinate, op.loc[:, dbf], color = dbf_color_map[dbf], label = dbf)
         ax.fill_between(op.coordinate, op.loc[:, dbf], color = dbf_color_map[dbf])
 
-def plot_occupancy_profile(ax, op, chromo, coordinate_start, pwmFile, padding = 0, threshold = 0.1,
-                           figsize=(18,4), file_name = None, dbf_color_map = None, nucDyad = False):
+        
+def plot_occupancy_profile(ax, op, chromo, coordinate_start, dbf_color_map, padding = 0, threshold = 0.1,
+                           figsize=(18,4), file_name = None, nucDyad = False):
 
-    if dbf_color_map == None:
-        pwm = pickle.load(open(pwmFile, "rb"))
-        predefined_dbfs = list(pwm.keys())
-        # get upper case
-        predefined_dbfs = [x for x in predefined_dbfs if x != "unknown"]
-        predefined_dbfs = list(set([(x.split("_")[0]).upper() for x in predefined_dbfs]))
-        n_tfs = len(predefined_dbfs)
-        colorset48 = [(random.random(), random.random(), random.random(), 1.0) for i in range(n_tfs)] 
-        nucleosome_color = '0.7'
-
-        dbf_color_map = dict(list(zip(predefined_dbfs, colorset48)))
-        dbf_color_map['nucleosome'] = nucleosome_color
-        dbf_color_map['unknown'] =  '#D3D3D3'
         
     op['coordinate'] = np.arange(coordinate_start, coordinate_start + op.shape[0])
     op = op.iloc[padding:(-padding-1), :]
@@ -114,7 +101,6 @@ def plot_occupancy_profile(ax, op, chromo, coordinate_start, pwmFile, padding = 
     plot_dbf_binding(op, dbf_color_map, nucDyad, ax)
     
     #######################  set axis properties #######################
-    # ax.set_xlim(op.coordinate.iloc[0]-op.shape[0]/100.0, op.coordinate.iloc[-1] + op.shape[0]/100.0)
     ax.set_ylim(0, 1)
 
 

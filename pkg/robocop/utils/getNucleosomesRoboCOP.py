@@ -7,61 +7,106 @@ import numpy as np
 import pickle
 import pandas
 import os
+import glob
+import h5py
 from Bio import SeqIO
 from configparser import SafeConfigParser
 
-def getNucScores(coords, dirname, hmmconfig, chrm, chrSize): 
-    scores = np.zeros(chrSize)
-    coords = coords[coords["chr"] == chrm]
+# combine overlapping segments
+def getNonoverlappingSegments(coords):
+    chrs = list(set(coords['chr']))
+    segments = pandas.DataFrame(columns = ['chr', 'start', 'end'])
+    # get non overlapping segments for each chr
+    for chrm in chrs:
+        coords_chr = coords[coords['chr'] == chrm]
+        # assuming each segment is of same length
+        coords_chr = coords_chr.sort_values(by  = 'start')
+        sstart = -1
+        for i, r in coords_chr.iterrows():
+            if sstart == -1:
+                sstart = r['start']
+                send = r['end']
+            elif send + 1 <= r['end'] and send + 1 >= r['start']:
+                send = r['end']
+            else:
+                segments = segments.append({'chr': chrm, 'start': sstart, 'end': send}, ignore_index = True)
+                sstart = r['start']
+                send = r['end']
+        segments = segments.append({'chr': chrm, 'start': sstart, 'end': send}, ignore_index = True)
+    return segments
+
+
+def getNucScores(coords, dirname, hmmconfig, r): 
+    segmentSize = r['end'] - r['start'] + 1
+    scores = np.zeros(segmentSize)
+    scores_occ = np.zeros(segmentSize)
+    scores_overlap = np.zeros(segmentSize)
+    coords = coords[(coords["chr"] == r['chr']) & (coords['start'] >= r['start']) & (coords['end'] <= r['end'])]
     if coords.empty: 
-        return scores
+        return [], []
     idx = list(coords.index)
     unknown = []
     otherTF = []
     nucs = []
-    k = 0
+    # k = 0
     motifWidths = []
     # 4 states for nuc_center
     nuc_center_start = hmmconfig["nuc_start"] + 9 + 4 + 4 * 63
     nuc_center_end = nuc_center_start + 4
-    for i in idx:
-        start = int(coords.iloc[k]["start"]) - 1
-        end = int(coords.iloc[k]["end"])
-        k += 1
-        pTable = np.load(dirname + "posterior_and_emission.idx" + str(i) + ".npz", allow_pickle = True)['posterior']
-        # nuc center is 73 bases away from nuc_start
-        if i == 0:
-                scores[start:end] = np.sum(pTable[:, nuc_center_start:nuc_center_end], axis = 1)
-        elif i == idx[-1]:
-            scores[start + 500 :end] = np.sum(pTable[500:, nuc_center_start:nuc_center_end], axis = 1)
-        else:
-            scores[start + 500 :end - 500] = np.sum(pTable[500:-500, nuc_center_start:nuc_center_end], axis = 1)
-        del pTable
-    return scores
+    nuc_start = hmmconfig['nuc_start']
+    nuc_end = nuc_start + hmmconfig['nuc_len']
+    
+    allinfofiles = glob.glob(dirname + 'info*.h5')
+
+    for infofile in allinfofiles:
+        f = h5py.File(infofile, mode = 'r')
+        for i in idx:
+            segment_key = 'segment_' + str(i)
+            if segment_key not in f.keys(): continue
+            start = int(coords.loc[i]["start"]) - r['start']
+            end = int(coords.loc[i]["end"]) - r['start'] + 1
+            pTable = f[segment_key + '/posterior'][:]
+            scores[start : end] += np.sum(pTable[:, nuc_center_start:nuc_center_end], axis = 1)
+            scores_occ[start:end] += np.sum(pTable[:, nuc_start:nuc_end], axis = 1)
+            scores_overlap[start : end] += 1
+            del pTable
+        f.close()
+        
+    # take average when multiple segments cover same genomic region 
+    scores[scores_overlap > 0] /= scores_overlap[scores_overlap > 0]
+    scores_occ[scores_overlap > 0] /= scores_overlap[scores_overlap > 0]
+    return scores, scores_occ
 
 def getNucScoresWrapper(lst):
     (coords, dirname, hmmconfig, c, chrSize) = lst
-    scores = getNucScores(coords, dirname, hmmconfig, c, chrSize)
-    return scores
+    scores, scores_occ = getNucScores(coords, dirname, hmmconfig, c, chrSize)
+    return list(scores), list(scores_occ)
 
 def getNucs(dirname, chrSizes, hmmconfig):
     # Get the nucleosome dyad score for every position in the genome
     coordFile = dirname + "/coords.tsv"
     coords = pandas.read_csv(coordFile, sep = "\t")
-    
-    chrkeys = sorted(list(chrSizes.keys()))
-    wrapperList = []
-    for c in chrkeys:
-        wrapperList.append((coords, dirname + "/tmpDir/", hmmconfig, c, chrSizes[c]))
+    segments = getNonoverlappingSegments(coords)
+    segments['width'] = segments['end'] - segments['start']
     scores = []
-    for c in range(len(chrkeys)): scores.extend(getNucScores(coords, dirname + "/tmpDir/", hmmconfig, chrkeys[c], chrSizes[chrkeys[c]]))
+    scores_occ = []
+    chrs = []
+    pos = []
+    segment_num = [] 
+    for i, r in segments.iterrows(): # range(len(chrkeys)):
+        s, so = getNucScores(coords, dirname + "/tmpDir/", hmmconfig, r)
+        scores.extend(s)
+        scores_occ.extend(so)
+        chrs.extend([r['chr'] for _ in s])
+        pos.extend([x + r['start'] for x in range(len(s))])
+        segment_num.extend([i for _ in s])
 
-    df = pandas.DataFrame(columns = ["chr", "dyad", "score"])
-    chrs = sum(list(map(lambda x: [x for i in range(chrSizes[x])], chrkeys)), [])
-    pos = sum(list(map(lambda x: [i + 1 for i in range(chrSizes[x])], chrkeys)), [])
+    df = pandas.DataFrame(columns = ["chr", "dyad", "dyad_score", "occ_score", "segment_num"])
     df["chr"] = chrs
     df["dyad"] = pos
-    df["score"] = scores
+    df["dyad_score"] = scores
+    df["occ_score"] = scores_occ
+    df["segment_num"] = segment_num
     df.to_hdf(dirname + "/RoboCOP_outputs/nucCenterScores.h5", key = "df", mode = "w")
     
 
@@ -70,43 +115,53 @@ def getNucPos(dirname, chrSizes):
     nucs = pandas.read_hdf(dirname + "/RoboCOP_outputs/nucCenterScores.h5", key = "df", mode = "r")
     idx = {}
     idxscores = {}
-    chrkeys = sorted(list(chrSizes.keys()))
-    for j in range(len(chrkeys)):
-        idx[chrkeys[j]] = []
-        idxscores[chrkeys[j]] = []
-        nucchr = nucs[nucs["chr"] == chrkeys[j]]
+    idxscores_occ = {}
+    segments = sorted(list(set(nucs['segment_num'])))
+    segment_chrs = [nucs[nucs['segment_num'] == j].iloc[0]['chr'] for j in segments]
+    for j in range(len(segments)):
+        
+        idx[segments[j]] = []
+        idxscores[segments[j]] = []
+        idxscores_occ[segments[j]] = []
+        nucchr = nucs[nucs["segment_num"] == segments[j]]
         nucchr = nucchr.reset_index()
+        nucchrlen = len(nucchr)
         arrchr = np.zeros(len(nucchr))
-        while len(nucchr[nucchr['score'] > 0]):
-            i = np.argmax(nucchr["score"])
+        while len(nucchr[nucchr['dyad_score'] > 0]):
+            i = np.argmax(nucchr["dyad_score"])
             # replace surrounding scores with 0
-            nc = nucchr.iloc[i]['score']
+            nc = nucchr.iloc[i]['dyad_score']
+            nc_occ = np.mean(nucchr.iloc[range(max(0, i - 58), min(nucchrlen, i + 59))]['occ_score'])
             idxcount = 0
-            for k in range(max(0, i - 58), i + 59):
+            for k in range(max(0, i - 58), min(nucchrlen, i + 59)):
                 if arrchr[k] == 0:
                     idxcount += 1
                     arrchr[k] = 1
-                nucchr.at[k, 'score'] = 0
+                nucchr.at[k, 'dyad_score'] = 0
             if idxcount < 58 + 59: continue
-            idx[chrkeys[j]].append(i)
-            idxscores[chrkeys[j]].append(nc)
+            idx[segments[j]].append(nucchr.iloc[i]['dyad'])
+            idxscores[segments[j]].append(nc)
+            idxscores_occ[segments[j]].append(nc_occ)
             
     # create data frame
     chrs = []
     dyads = []
     scores = []
-    for i in chrSizes.keys():
-        for j in range(len(idx[i])):
-            chrs.append(i)
-            dyads.append(int(idx[i][j]))
-            scores.append(idxscores[i][j])
-    a = pandas.DataFrame(columns = ["chr", "dyad", "score"])
+    scores_occ = []
+    for i in range(len(segments)): # chrSizes.keys():
+        for j in range(len(idx[segments[i]])):
+            chrs.append(segment_chrs[i])
+            dyads.append(int(idx[segments[i]][j]))
+            scores.append(idxscores[segments[i]][j])
+            scores_occ.append(idxscores_occ[segments[i]][j])
+    a = pandas.DataFrame(columns = ["chr", "dyad", "dyad_score", "occ_score"])
     a["chr"] = chrs
     a["dyad"] = dyads
-    a["score"] = scores
-    a = a.sort_values(by = "score", ascending = False)
-    a.to_hdf(dirname + "/RoboCOP_outputs/nucleosome_dyads_new.h5", key = "df", mode = "w")
+    a["dyad_score"] = scores
+    a["occ_score"] = scores_occ
+    a.to_hdf(dirname + "/RoboCOP_outputs/nucleosome_dyads.h5", key = "df", mode = "w")
 
+    
 if __name__ == '__main__':
     
     if len(sys.argv) != 2:
@@ -131,8 +186,6 @@ if __name__ == '__main__':
     os.makedirs(dirname + "/RoboCOP_outputs/", exist_ok = True)
 
     # first get the nucleosome dyad score for every position
-    if not os.path.exists(dirname + "/RoboCOP_outputs/nucCenterScores.h5"): getNucs(dirname, chrSizes, hmmconfig)
-
+    getNucs(dirname, chrSizes, hmmconfig)
     # get nucleosome dyads using greedy approach
-    if not os.path.exists(dirname + "/RoboCOP_outputs/nucleosome_dyads.h5"): getNucPos(dirname, chrSizes)
-    print("Done")
+    getNucPos(dirname, chrSizes)
