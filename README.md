@@ -48,7 +48,7 @@ path is /home/myhome/RoboCOP/pkg/robocop/librobocop.so then in config.ini set:
  cshared=/home/myhome/RoboCOP/pkg/robocop/librobocop.so
 ```
 
-### Tutorial
+### [Tutorial](https://github.com/HarteminkLab/RoboCOP/blob/master/analysis/example_robocop.ipynb)
 
 Introductory vignette describing how to run RoboCOP can be found
 [here](https://github.com/HarteminkLab/RoboCOP/blob/master/analysis/example_robocop.ipynb)
