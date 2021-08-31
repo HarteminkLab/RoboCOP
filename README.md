@@ -20,8 +20,8 @@ The list of required python and R modules can be found in robocop-spec-file.txt.
 A conda environment can be created using [robocop-spec-file.txt](https://github.com/HarteminkLab/RoboCOP/blob/master/robocop-spec-file.txt) as:
 
 ``
-conda create --name robocop-env --file robocop-spec-file.txt
-conda activate robocop-env
+ conda create --name robocop-env --file robocop-spec-file.txt
+ conda activate robocop-env
 ``
 
 Change to RoboCOP directory and generate the shared object librobocop.so
