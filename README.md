@@ -21,7 +21,6 @@ A conda environment can be created using [robocop-spec-file.txt](https://github.
 
 ```
  conda create --name robocop-env --file robocop-spec-file.txt
-
  conda activate robocop-env
 ```
 
