@@ -50,5 +50,7 @@ path is /home/myhome/RoboCOP/pkg/robocop/librobocop.so then in config.ini set:
 
 ### Tutorial
 
-Introductory vignette describing how to run RoboCOP can be found in a
+Introductory vignette describing how to run RoboCOP can be found
+[here](https://github.com/HarteminkLab/RoboCOP/blob/master/analysis/example_robocop.ipynb)
+in a
 jupyter notebook format in the analysis directory.
