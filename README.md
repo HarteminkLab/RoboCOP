@@ -13,7 +13,7 @@ chromatin accessibility data (currently uses only with MNase-seq or ATAC-seq) to
 compute genome-wide probabilistic occupancy landscape of nucleosomes and
 transciption factors (collectively known as DNA-binding factors or DBFs).
 
-The list of required python and R modules can be found in robocop-spec-file.txt.
+The list of required python and R modules can be found in [robocop-spec-file.txt](https://github.com/HarteminkLab/RoboCOP/blob/master/robocop-spec-file.txt).
 
 ### Installation:
 
