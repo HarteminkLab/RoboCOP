@@ -24,7 +24,13 @@ A conda environment can be created using [robocop-spec-file.txt](https://github.
  conda activate robocop-env
 ```
 
-Change to RoboCOP directory and generate the shared object librobocop.so
+Download RoboCOP from Github.
+
+```
+ git clone https://github.com/HarteminkLab/RoboCOP.git
+```
+
+Change to RoboCOP directory and generate the shared object librobocop.so.
 
 ```
  cd RoboCOP
@@ -34,7 +40,7 @@ Change to RoboCOP directory and generate the shared object librobocop.so
 ```
 
 Add path of shared library to your configuration file. Example
-configuration file provided in analysis directory (config_example.ini). So from the robocop
+configuration file provided in analysis directory ([config_example.ini](https://github.com/HarteminkLab/RoboCOP/blob/master/analysis/config_example.ini)). So from the robocop
 directory:
 
 ```
@@ -53,4 +59,4 @@ path is /home/myhome/RoboCOP/pkg/robocop/librobocop.so then in config.ini set:
 Introductory vignette describing how to run RoboCOP can be found
 [here](https://github.com/HarteminkLab/RoboCOP/blob/master/analysis/example_robocop.ipynb)
 in a
-jupyter notebook format in the analysis directory.
+jupyter notebook format in the [analysis](https://github.com/HarteminkLab/RoboCOP/tree/master/analysis) directory.
