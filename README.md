@@ -60,3 +60,6 @@ Introductory vignette describing how to run RoboCOP can be found
 [here](https://github.com/HarteminkLab/RoboCOP/blob/master/analysis/example_robocop.ipynb)
 in a
 jupyter notebook format in the [analysis](https://github.com/HarteminkLab/RoboCOP/tree/master/analysis) directory.
+
+Vignette describing how to run DynaCOP can be found [here](https://github.com/HarteminkLab/RoboCOP/blob/master/analysis/example_dynacop_cli.ipynb) in a jupyter
+notebook format in the [analysis](https://github.com/HarteminkLab/RoboCOP/tree/master/analysis) directory.
