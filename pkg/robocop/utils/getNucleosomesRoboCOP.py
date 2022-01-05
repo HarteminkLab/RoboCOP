@@ -75,6 +75,14 @@ def getNucScores(coords, dirname, hmmconfig, r):
     # take average when multiple segments cover same genomic region 
     scores[scores_overlap > 0] /= scores_overlap[scores_overlap > 0]
     scores_occ[scores_overlap > 0] /= scores_overlap[scores_overlap > 0]
+    # remove scores that were not calculated properly due to numerical issues
+    scores[np.isnan(scores)] = 0
+    scores_occ[np.isnan(scores_occ)] = 0
+    scores[np.isinf(scores)] = 0
+    scores_occ[np.isinf(scores_occ)] = 0
+    # some scores are slightly > 1 due to numerical issues
+    scores[scores > 1] = 1
+    scores_occ[scores_occ > 1] = 1
     return scores, scores_occ
 
 def getNucScoresWrapper(lst):
@@ -83,6 +91,11 @@ def getNucScoresWrapper(lst):
     return list(scores), list(scores_occ)
 
 def getNucs(dirname, chrSizes, hmmconfig):
+
+    if os.path.isfile(dirname + "/RoboCOP_outputs/nucCenterScores.h5"): return
+    
+    os.makedirs(dirname + "/RoboCOP_outputs/", exist_ok = True)
+
     # Get the nucleosome dyad score for every position in the genome
     coordFile = dirname + "/coords.tsv"
     coords = pandas.read_csv(coordFile, sep = "\t")
@@ -92,7 +105,7 @@ def getNucs(dirname, chrSizes, hmmconfig):
     scores_occ = []
     chrs = []
     pos = []
-    segment_num = [] 
+    segment_num = []
     for i, r in segments.iterrows(): # range(len(chrkeys)):
         s, so = getNucScores(coords, dirname + "/tmpDir/", hmmconfig, r)
         scores.extend(s)
@@ -112,10 +125,14 @@ def getNucs(dirname, chrSizes, hmmconfig):
 
 # get nucleosome dyad predictions using a greedy approach from posterior decoding
 def getNucPos(dirname, chrSizes):
+
+    if os.path.isfile(dirname + "/RoboCOP_outputs/nucleosome_dyads.h5"): return
+    
     nucs = pandas.read_hdf(dirname + "/RoboCOP_outputs/nucCenterScores.h5", key = "df", mode = "r")
     idx = {}
     idxscores = {}
     idxscores_occ = {}
+    idxscores_min_occ = {}
     segments = sorted(list(set(nucs['segment_num'])))
     segment_chrs = [nucs[nucs['segment_num'] == j].iloc[0]['chr'] for j in segments]
     for j in range(len(segments)):
@@ -123,15 +140,18 @@ def getNucPos(dirname, chrSizes):
         idx[segments[j]] = []
         idxscores[segments[j]] = []
         idxscores_occ[segments[j]] = []
+        idxscores_min_occ[segments[j]] = []
         nucchr = nucs[nucs["segment_num"] == segments[j]]
         nucchr = nucchr.reset_index()
         nucchrlen = len(nucchr)
         arrchr = np.zeros(len(nucchr))
+        print(nucchr)
         while len(nucchr[nucchr['dyad_score'] > 0]):
             i = np.argmax(nucchr["dyad_score"])
             # replace surrounding scores with 0
             nc = nucchr.iloc[i]['dyad_score']
             nc_occ = np.mean(nucchr.iloc[range(max(0, i - 58), min(nucchrlen, i + 59))]['occ_score'])
+            nc_min_occ = np.min(nucchr.iloc[range(max(0, i - 58), min(nucchrlen, i + 59))]['occ_score'])
             idxcount = 0
             for k in range(max(0, i - 58), min(nucchrlen, i + 59)):
                 if arrchr[k] == 0:
@@ -142,23 +162,27 @@ def getNucPos(dirname, chrSizes):
             idx[segments[j]].append(nucchr.iloc[i]['dyad'])
             idxscores[segments[j]].append(nc)
             idxscores_occ[segments[j]].append(nc_occ)
+            idxscores_min_occ[segments[j]].append(nc_min_occ)
             
     # create data frame
     chrs = []
     dyads = []
     scores = []
     scores_occ = []
+    scores_min_occ = []
     for i in range(len(segments)): # chrSizes.keys():
         for j in range(len(idx[segments[i]])):
             chrs.append(segment_chrs[i])
             dyads.append(int(idx[segments[i]][j]))
             scores.append(idxscores[segments[i]][j])
             scores_occ.append(idxscores_occ[segments[i]][j])
-    a = pandas.DataFrame(columns = ["chr", "dyad", "dyad_score", "occ_score"])
+            scores_min_occ.append(idxscores_min_occ[segments[i]][j])
+    a = pandas.DataFrame(columns = ["chr", "dyad", "dyad_score", "avg_occ_score", "min_occ_score"])
     a["chr"] = chrs
     a["dyad"] = dyads
     a["dyad_score"] = scores
-    a["occ_score"] = scores_occ
+    a["avg_occ_score"] = scores_occ
+    a["min_occ_score"] = scores_min_occ
     a.to_hdf(dirname + "/RoboCOP_outputs/nucleosome_dyads.h5", key = "df", mode = "w")
 
     

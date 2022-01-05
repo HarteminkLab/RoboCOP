@@ -213,7 +213,7 @@ double calc_sr(double *sf, double *sb, int len, long double *sr) {
   for (i = len - 1; i > 0; i--) {
     sr[i - 1] = sr[i] * (sb[i] / sf[i]) ;
     
-    if(isinf(sr[i - 1])) sr[i - 1] = DBL_MAX;
+    // if(isinf(sr[i - 1])) sr[i - 1] = DBL_MAX;
 
     log_sf_sum += log(sf[i]);
 //    sr[i - 1] = sr[i] + log(sb[i]) - log(sf[i]);

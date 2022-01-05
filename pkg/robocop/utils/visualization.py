@@ -88,8 +88,7 @@ def plot_dbf_binding(op, dbf_color_map, nucDyad, ax):
         ax.fill_between(op.coordinate, op.loc[:, dbf], color = dbf_color_map[dbf])
 
         
-def plot_occupancy_profile(ax, op, chromo, coordinate_start, dbf_color_map, padding = 0, threshold = 0.1,
-                           figsize=(18,4), file_name = None, nucDyad = False):
+def plot_occupancy_profile(ax, op, chromo, coordinate_start, dbf_color_map, padding = 0, threshold = 0.1, plot_legend = True, figsize=(18,4), file_name = None, nucDyad = False):
 
         
     op['coordinate'] = np.arange(coordinate_start, coordinate_start + op.shape[0])
@@ -104,13 +103,14 @@ def plot_occupancy_profile(ax, op, chromo, coordinate_start, dbf_color_map, padd
     ax.set_ylim(0, 1)
 
 
-    # legend
-    leg = ax.legend(loc='lower left', ncol = 12, bbox_to_anchor = (0., 1.),
-        borderaxespad=0, frameon=False, framealpha=0)
-
-    if leg != None:
-        for legobj in leg.legendHandles:
-            legobj.set_linewidth(10.0)
+    if plot_legend:
+        # legend
+        leg = ax.legend(loc='lower left', ncol = 12, bbox_to_anchor = (0., 1.),
+                        borderaxespad=0, frameon=False, framealpha=0)
+        
+        if leg != None:
+            for legobj in leg.legendHandles:
+                legobj.set_linewidth(10.0)
 
     #set the y axis bounds so only the 0-1.0 part is shown
     ax.spines['left'].set_bounds(0, 1.0)

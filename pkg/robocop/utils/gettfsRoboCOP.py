@@ -6,14 +6,43 @@ import sys
 import numpy as np
 import pickle
 import pandas
+import h5py
 import os
+import glob
 from Bio import SeqIO
 from configparser import SafeConfigParser
 
-def getScores(coords, dirname, hmmconfig, chrm, tf, chrSize):
-    scoresSum = list(map(lambda x: [0 for j in range(chrSize)], tf))
-    coords = coords[coords["chr"] == chrm]
-    if coords.empty: return scoresSum
+# combine overlapping segments
+def getNonoverlappingSegments(coords):
+    chrs = list(set(coords['chr']))
+    segments = pandas.DataFrame(columns = ['chr', 'start', 'end'])
+    # get non overlapping segments for each chr
+    for chrm in chrs:
+        coords_chr = coords[coords['chr'] == chrm]
+        # assuming each segment is of same length
+        coords_chr = coords_chr.sort_values(by  = 'start')
+        sstart = -1
+        for i, r in coords_chr.iterrows():
+            if sstart == -1:
+                sstart = r['start']
+                send = r['end']
+            elif send + 1 <= r['end'] and send + 1 >= r['start']:
+                send = r['end']
+            else:
+                segments = segments.append({'chr': chrm, 'start': sstart, 'end': send}, ignore_index = True)
+                sstart = r['start']
+                send = r['end']
+        segments = segments.append({'chr': chrm, 'start': sstart, 'end': send}, ignore_index = True)
+    return segments
+
+def getScores(coords, dirname, hmmconfig, tf, r):
+    chrm = r['chr']
+    segmentSize = r['width'] + 1
+    scoresSum = list(map(lambda x: [0 for j in range(segmentSize)], tf))
+    scores_overlap = np.zeros(segmentSize)
+    coords = coords[(coords["chr"] == r['chr']) & (coords['start'] >= r['start']) & (coords['end'] <= r['end'])]
+    if coords.empty: 
+        return []
     idx = list(coords.index)
     scores = []
     unknown = []
@@ -21,19 +50,31 @@ def getScores(coords, dirname, hmmconfig, chrm, tf, chrSize):
     nucs = []
     k = 0
     motifWidths = []
-    for i in idx:
-        start = int(coords.iloc[k]["start"]) - 1
-        end = int(coords.iloc[k]["end"])
-        k += 1
-        pTable = np.load(dirname + "posterior_and_emission.idx" + str(i) + ".npz")['posterior']
-        for j in range(len(tf)):
-            if i == 0:
-                scoresSum[j][start:end] = list(np.sum(pTable[:, [hmmconfig["tf_starts"][tf[j]], hmmconfig["tf_starts"][tf[j]] + hmmconfig["tf_lens"][tf[j]]]], axis = 1))
-            elif i == idx[-1]:
-                scoresSum[j][start + 500 :end] = list(np.sum(pTable[500:, [hmmconfig["tf_starts"][tf[j]], hmmconfig["tf_starts"][tf[j]] + hmmconfig["tf_lens"][tf[j]]]], axis = 1))
-            else:
-                scoresSum[j][start + 500 :end - 500] = list(np.sum(pTable[500:-500, [hmmconfig["tf_starts"][tf[j]], hmmconfig["tf_starts"][tf[j]] + hmmconfig["tf_lens"][tf[j]]]], axis = 1))
 
+    allinfofiles = glob.glob(dirname + 'info*.h5')
+
+    for infofile in allinfofiles:
+        f = h5py.File(infofile, mode = 'r')
+        for i in idx:
+            segment_key = 'segment_' + str(i)
+            if segment_key not in f.keys():
+                continue
+            start = int(coords.loc[i]["start"]) - r['start']
+            end = int(coords.loc[i]["end"]) - r['start'] + 1
+            pTable = f[segment_key + '/posterior'][:]
+            for j in range(len(tf)):
+                ss = np.sum(pTable[:, [int(hmmconfig["tf_starts"][int(tf[j])]), int(hmmconfig["tf_starts"][int(tf[j])] + hmmconfig["tf_lens"][int(tf[j])])]], axis = 1)
+                ss[np.isinf(ss)] = 0
+                ss[np.isnan(ss)] = 0
+                scoresSum[j][start:end] = list(ss)
+                scores_overlap[start : end] += 1
+        f.close()
+
+    for j in range(len(tf)):
+        ss = np.array(scoresSum[j])
+        ss[scores_overlap > 0] /= scores_overlap[scores_overlap > 0]
+        ss[ss > 1] = 1
+        scoresSum[j] = list(ss)
     return scoresSum
 
 def getScoresWrapper(args):
@@ -49,35 +90,46 @@ def getMotifWidths(hmmconfig, tf):
 
 
 def getTFs(dirname, chrSizes, tfs, hmmconfig):
+
+    os.makedirs(dirname + "/RoboCOP_outputs/", exist_ok = True)
+    # Get the nucleosome dyad score for every position in the genome
     coordFile = dirname + "/coords.tsv"
     coords = pandas.read_csv(coordFile, sep = "\t")
+    segments = getNonoverlappingSegments(coords)
+    segments['width'] = (segments['end'] - segments['start']).astype(int)
 
-    chrkeys = sorted(list(chrSizes.keys()))
     for tf in tfs:
+        if os.path.isfile(dirname + "/RoboCOP_outputs/" + tf + "_scores.h5"):
+            continue
         tfIndex = list(filter(lambda x: (hmmconfig["tfs"][x].split("_")[0]).upper() == tf, range(len(hmmconfig["tfs"]))))
         motifWidths = getMotifWidths(hmmconfig, tfIndex)
-        scoresPos = [list(map(lambda x: [0 for j in range(chrSizes[i])], tfIndex) for i in chrkeys)]
-        scoresNeg = [list(map(lambda x: [0 for j in range(chrSizes[i])], tfIndex) for i in chrkeys)]
-        wrapperList = []
 
-        for c in chrkeys:
-            wrapperList.append((coords, dirname + "/tmpDir/", hmmconfig, c, tfIndex, chrSizes[c]))
-        scoresSum = [getScoresWrapper(x) for x in wrapperList]
+        scoresSum = []
+        totalLen = 0
+        chrs = []
+        pos = []
+        end = []
+
+        for i, r in segments.iterrows():
+            ss = getScores(coords, dirname + '/tmpDir/', hmmconfig, tfIndex, r)
+            scoresSum.append(ss)
+            totalLen += r['width']
+            chrs.extend([r['chr'] for j in range(r['width'])])
+            pos.extend([int(r['start']) + j for j in range(r['width'])])
+            end.extend([int(r['start']) + j for j in range(r['width'])])
+            
         # compile scores
-        totalLen = np.sum(list(chrSizes.values()))
         scores = np.zeros(totalLen)
         motifWidth = np.zeros(totalLen)
-        chrs = sum(list(map(lambda x: [x for i in range(chrSizes[x])], chrkeys)), [])
-        pos = sum(list(map(lambda x: [i + 1 for i in range(chrSizes[x])], chrkeys)), [])
-        end = sum(list(map(lambda x: [i + 1 for i in range(chrSizes[x])], chrkeys)), [])
+
         i = 0
-        for c in range(len(chrkeys)):
-            for p in range(chrSizes[chrkeys[c]]):
-                posMax = scoresSum[c][0][p]
+        for j, r in segments.iterrows():
+            for p in range(r['width']):
+                posMax = scoresSum[j][0][p]
                 posIdx = 0
                 for w in range(1, len(motifWidths)):
-                    if scoresSum[c][w][p] > posMax:
-                        posMax = scoresSum[c][w][p]
+                    if scoresSum[j][w][p] > posMax:
+                        posMax = scoresSum[j][w][p]
                         posIdx = w
                 motifWidth[i] = motifWidths[posIdx]
                 scores[i] = posMax
@@ -86,8 +138,8 @@ def getTFs(dirname, chrSizes, tfs, hmmconfig):
                 i += 1
         df = pandas.DataFrame(columns = ["chr", "start", "end", "width", "score"])
         df["chr"] = chrs
-        df["start"] = pos
-        df["end"] = end
+        df["start"] = np.array(pos).astype(int)
+        df["end"] = np.array(end).astype(int)
         df["width"] = motifWidth.astype(int)
         df["score"] = scores
         df.to_hdf(dirname + "/RoboCOP_outputs/" + tf + "_scores.h5", key = 'df', mode = 'w')
@@ -96,6 +148,8 @@ def getTFs(dirname, chrSizes, tfs, hmmconfig):
 # filter out non zero and overlapping tf binding sites 
 def getTFPosMod(dirname, chrSizes, tfs, hmmconfig):
     for tf in tfs:
+        if os.path.isfile(dirname + "/RoboCOP_outputs/" + tf + ".h5"):
+            continue
         tfscores = pandas.read_hdf(dirname + "/RoboCOP_outputs/" + tf + "_scores.h5", key = "df", mode = "r")
         df = pandas.DataFrame(columns = list(tfscores))
         idxstart = {}
@@ -109,9 +163,10 @@ def getTFPosMod(dirname, chrSizes, tfs, hmmconfig):
             tfchr = tfscores[tfscores['chr'] == chrkeys[j]]
             tfchrlen = len(tfchr)
             tfscore = np.array(tfchr['score'])
+            if np.shape(tfscore)[0] == 0: continue
             tfscoreKeep = np.zeros(len(tfscore))
             tfchr = tfchr.reset_index()
-            while 1: 
+            while 1:
                 i = np.argmax(tfscore)
                 print("Score:", i, j, tfscore[i], tfscore[i] < 1e-1000, np.isinf(np.log(tfscore[i])), file = sys.stderr)
                 if tfscore[i] < 1e-1000 or np.isinf(np.log(tfscore[i])): break
@@ -193,8 +248,8 @@ if __name__ == '__main__':
     tfs.sort()
 
     print(tfs)
-    print(tfs.index('MCM1'))
-
+    print(len(tfs))
+    print(tfs.index('HSF1'))
     if len(sys.argv) == 3: tfIdx = int((sys.argv)[2])
     else: tfIdx = None
 

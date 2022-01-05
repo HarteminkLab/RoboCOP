@@ -69,7 +69,7 @@ def convert_to_prob(dbf_conc, pwm):
 
     return dict(list(zip(dbfs, motif_prob)))
 
-def convert_to_conc(dbf_prob):
+def convert_to_conc(dbf_prob, pwm):
     """
     the dbf_conc = dbf_prob / (background_prob ^ dbf_len)
     """
@@ -81,7 +81,7 @@ def convert_to_conc(dbf_prob):
         elif dbf == 'nucleosome':
             dbf_len = 147
         elif dbf in pwm:
-            dbf_len = pwm[dbf]['matrix'].shape[1]
+            dbf_len = pwm[dbf].shape[1]
         else:
             sys.exit('error: %s not found' % dbf)
 
