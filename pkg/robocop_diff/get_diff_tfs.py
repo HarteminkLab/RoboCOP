@@ -78,19 +78,13 @@ def get_tf_diff(dirnames, outdir):
     all_tf_sites.to_csv(outdir + 'diff_tf.csv', sep='\t', index=False)
     return all_tf_sites
 
-def get_tf_gene_promoter(dirnames, outdir):
-    '''
-    if os.path.isfile('/usr/xtmp/sneha/tmpDir/all_diff_tfs_genes.csv'):
-        all_tf_sites = pandas.read_csv('/usr/xtmp/sneha/tmpDir/all_diff_tfs_genes.csv', sep='\t')
-        return all_tf_sites
-    '''
+def get_tf_gene_promoter(dirnames, outdir, plus_minus_ann):
     all_tf_sites = get_tf_diff(dirnames, outdir)
     score_cols = list(filter(lambda x: x.startswith('score'), all_tf_sites.columns))
 
     all_tf_sites = all_tf_sites[~np.all(all_tf_sites[score_cols] > 0.1, axis=1)]
     all_tf_sites = all_tf_sites.reset_index(drop=True)
-    
-    plus_minus_ann = pandas.read_csv('/usr/xtmp/sneha/Chereji_2018/13059_2018_1398_MOESM2_ESM.csv', sep=',')
+
     plus_minus_ann['Promoter_start'] = [r['-1 nucleosome'] - 73 if r['Strand'] == 1 else r['+1 nucleosome'] - 73 for i, r in plus_minus_ann.iterrows()]
     plus_minus_ann['Promoter_end'] = [r['+1 nucleosome'] + 73 if r['Strand'] == 1 else r['-1 nucleosome'] + 73 for i, r in plus_minus_ann.iterrows()]
     count_df = pandas.DataFrame(columns=['tf', 'total', 'promoter_count'])
@@ -104,37 +98,12 @@ def get_tf_gene_promoter(dirnames, outdir):
         c[r['TF']] += 1
         genes[i] = ','.join(pm_tf['ORF'])
     all_tf_sites['gene'] = genes
-    # all_tf_sites.to_csv('/usr/xtmp/sneha/tmpDir/all_diff_tfs_genes.csv', sep='\t', index=False)
     return all_tf_sites
-    '''
-    for tf in tfs:
-          count_df = count_df.append({'tf': tf, 'total': len(tf_sites[tf_sites['TF'] == tf]), 'promoter_count': c[tf]}, ignore_index=True)
-
-    percentage = np.zeros(len(count_df))
-    percentage[count_df['total'] > 0] = count_df[count_df['total'] > 0]['promoter_count'] / count_df[count_df['total'] > 0]['total'] * 100
-    count_df['percentage'] = percentage
-    count_df.to_csv('/usr/xtmp/sneha/tmpDir/all_diff_tfs_genes_counts.csv', sep='\t', index=False)
-    return count_df
-    exit(0)
-    '''
-    '''
-    count_df = pandas.read_csv('/usr/xtmp/sneha/tmpDir/all_diff_tfs_genes_counts_subset.csv', sep='\t')
-    fig, ax = plt.subplots(1, 3, figsize=(12, 19))
-    seaborn.barplot(y='tf', x='total', data=count_df, ax=ax[0])
-    seaborn.barplot(y='tf', x='promoter_count', data=count_df, ax=ax[1])
-    seaborn.barplot(y='tf', x='percentage', data=count_df, ax=ax[2])
-    '''
-    ax[0].set_xticklabels(ax[0].get_xticklabels(), rotation=90)
-    ax[1].set_xticklabels(ax[1].get_xticklabels(), rotation=90)
-    ax[2].set_xticklabels(ax[2].get_xticklabels(), rotation=90)
-    '''
-    plt.savefig('/usr/xtmp/sneha/tmpDir/tmp.png')
-    plt.close()
-    exit(0)
-    '''
     
-def get_tf_clusters(gene_df, dirnames, outdir):
-    tf_sites = get_tf_gene_promoter(dirnames, outdir) # pandas.read_csv('/usr/xtmp/sneha/tmpDir/all_diff_tfs_genes_subset.csv', sep='\t')
+def get_tf_clusters(gene_df, dirnames, outdir, plus_minus_ann_file):
+
+    plus_minus_ann = pandas.read_csv(plus_minus_ann_file, sep=',')
+    tf_sites = get_tf_gene_promoter(dirnames, outdir, plus_minus_ann) 
     tf_in_genes = pandas.DataFrame(columns=['TF', 'cluster', 'cluster_size', 'n_tf_genes'])
     tf_sites = tf_sites[~tf_sites['gene'].isna()]
     tf_sites['gene'] = tf_sites['gene'].str.split(',')
@@ -143,55 +112,12 @@ def get_tf_clusters(gene_df, dirnames, outdir):
         genes = list(gene_df[gene_df['cluster'] == c].index)
         gene_len = len(genes)
         for tf in sorted(list(set(tf_sites['TF']))):
-            # if c == 7 and tf == 'MET31':
-            #     p_tf = tf_sites[(tf_sites['TF'] == tf) & (tf_sites['gene'].isin(genes))]['gene'].unique()
-            #     print(p_tf)
-            #     exit(0)
-            '''
-            if c == 0: # and tf == 'ABF1':
-                p_tf = tf_sites[(tf_sites['gene'].isin(genes))]['gene'].unique()
-                for g in p_tf:
-                    t_s = tf_sites[tf_sites['gene'] == g]
-                    g_df = gene_df.loc[g]
-                    p1s = g_df[['p1_shift_AB', 'p1_shift_BC', 'p1_shift_CD', 'p1_shift_DE']].values
-                    m1s = g_df[['m1_shift_AB', 'm1_shift_BC', 'm1_shift_CD', 'm1_shift_DE']].values
-                    if np.any(p1s < -20) and np.any(m1s > 20):
-                        print(g, len(t_s), p1s, m1s)
-                print(sorted(list(p_tf)))
-                exit(0)
-            '''
 
-            if c == 7: # and tf == 'ABF1':
-                p_tf = tf_sites[(tf_sites['gene'].isin(genes))]['gene'].unique()
-                for g in p_tf:
-                    t_s = tf_sites[tf_sites['gene'] == g]
-                    g_df = gene_df.loc[g]
-                    p1s = g_df[['p1_shift_AB', 'p1_shift_BC', 'p1_shift_CD', 'p1_shift_DE']].values
-                    m1s = g_df[['m1_shift_AB', 'm1_shift_BC', 'm1_shift_CD', 'm1_shift_DE']].values
-                    if np.any(p1s > 20) and np.any(m1s < -20):
-                        print(g, len(t_s), p1s, m1s)
-                print(sorted(list(p_tf)))
-                exit(0)
-
-            print(c, tf)
             tf_genes = tf_sites[(tf_sites['TF'] == tf) & (tf_sites['gene'].isin(genes))]['gene'].unique()
-            # print(tf_genes)
-            # exit(0)
-            # tf_genes = sum([x.split(',') for x in tf_sites[(tf_sites['tf'] == tf) & (~tf_sites['gene'].isna())]['gene']], [])
-            # tf_genes = list(set(tf_genes))
             tf_in_genes = tf_in_genes.append({'TF': tf, 'cluster': c, 'cluster_size': gene_len, 'n_tf_genes': len(tf_genes)}, ignore_index=True)
 
-
-    print(tf_in_genes)
-    
     tf_in_genes['gene_percentage'] = tf_in_genes['n_tf_genes'] / tf_in_genes['cluster_size'] * 100
 
-    '''
-    seaborn.barplot(x='tf', y='gene_percentage', hue='cluster', data=tf_in_genes)
-    plt.savefig('/usr/xtmp/sneha/tmpDir/tmp.png')
-    plt.close()
-    '''
-    
     tf_names = sorted(list(set(tf_in_genes['TF'])))
     clusters = sorted(list(set(tf_in_genes['cluster'])))
     tf_wide =  np.zeros((len(set(tf_in_genes['TF'])), len(set(tf_in_genes['cluster']))))
@@ -207,50 +133,9 @@ def get_tf_clusters(gene_df, dirnames, outdir):
     tf_wide = tf_wide[~np.all(tf_wide > 10, axis=1)]
     # at least 1 > 10%
     tf_wide = tf_wide[np.any(tf_wide > 10, axis=1)]
-    print("tf_wide")
-    print(tf_wide)
-    # print(np.sum(tf_wide.values, axis=0), np.sum(tf_wide.values, axis=1))
-    # plt.figure(figsize=(6, 19))
-    # seaborn.heatmap(tf_wide, cmap='Spectral_r', yticklabels=1, vmax=50)
-    # seaborn.clustermap(tf_wide, cmap='Spectral_r', yticklabels=1, col_cluster=False, figsize=(8, 19), vmax=30) #, standard_scale=0)
-    seaborn.clustermap(tf_wide, cmap='Spectral_r', yticklabels=1, col_cluster=False, figsize=(8, 19), z_score=0) # standard_scale=0)
-    plt.savefig('/usr/xtmp/sneha/tmpDir/tmp.pdf')
-    plt.close()
 
-    tf_dirname = '/usr/xtmp/sneha/tmpDir/tf_diff_plots/'
-    tf_sites_tf = tf_sites.drop(columns=['chr', 'start', 'end'])
-    tf_sites_tf = tf_sites_tf.groupby(by=['gene', 'TF']).mean().reset_index()
+    return tf_wide
 
-    gene_tf_times = []
-    for tf in tf_names: # ['MCM1']:
-        tf_sites_one_tf = tf_sites_tf[tf_sites_tf['TF'] == tf].reset_index()
-        tf_sites_one_tf = tf_sites_one_tf.drop(columns=['TF', 'index'])
-        tf_sites_one_tf = tf_sites_one_tf.set_index('gene')
-        genes_not_present = set(gene_df.index).difference(set(tf_sites_one_tf.index))
-        col_names = sorted(list(filter(lambda x: x != 'gene', tf_sites_one_tf.columns)))
-        genes_not_present_df = pandas.DataFrame(np.zeros((len(genes_not_present), len(col_names))), columns=col_names, index=genes_not_present)
-        tf_sites_one_tf = tf_sites_one_tf.append(genes_not_present_df, ignore_index=False)
-        tf_sites_one_tf = tf_sites_one_tf.loc[gene_df.index]
-        
-        plt.figure(figsize=(4, 19))
-        ax = seaborn.heatmap(tf_sites_one_tf, cmap='Blues')
-        ax.set_yticks([])
-
-        csize = 0
-        for i in range(len(set(gene_df['cluster']))):
-            if csize > 0: ax.axhline(csize, linewidth=2, color='black')
-            csize += len(gene_df[gene_df['cluster'] == i])
-        
-        plt.savefig(tf_dirname + tf + '.png')
-        plt.close()
-        gene_tf_times.append(tf_sites_one_tf.values)
-
-    gene_tf_times = np.array(gene_tf_times)
-    print(gene_tf_times.shape)
-    # gene_tf_times = np.swapaxes(gene_tf_times, 1, 2)
-    # print(gene_tf_times.shape)
-    
-    np.save('/usr/xtmp/sneha/tmpDir/gene_tf_probs', gene_tf_times)
 
 def mean_confidence_interval(data, confidence=0.95):
     a = 1.0 * np.array(data)

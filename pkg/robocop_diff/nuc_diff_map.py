@@ -500,10 +500,9 @@ def cluster_gene_nucs(nuc_df, outdir, plus_minus_ann_file, k):
     df_scaled = pandas.DataFrame(scaler.fit_transform(df.fillna(0)), index=df.index, columns=df.columns)
 
     k_means = KMeans(n_clusters=k, random_state=9)
-    df_scaled['cluster'] = reorder_clusters(df, clusters=k_means.fit_predict(df_scaled.fillna(0)))
+    df_scaled['cluster'] = k_means.fit_predict(df_scaled.fillna(0))
     df['cluster'] = df_scaled['cluster']
 
-    df = df.loc[sort_by_gex_cluster(df)]
     return df
 
 def get_gene_features(nuc_df, outdir, plus_minus_ann):
