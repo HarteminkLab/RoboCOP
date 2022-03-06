@@ -1,5 +1,7 @@
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
+from matplotlib.axes._axes import _log as matplotlib_axes_logger
+matplotlib_axes_logger.setLevel('ERROR')
 import numpy as np
 import pandas
 import seaborn
@@ -41,7 +43,9 @@ def get_info_robocop(outDir, chrm, start, end):
 
     optable, longCounts, shortCounts = calc_posterior(allinfofiles, dshared, coords, chrm, start, end)
     dbf_color_map = colorMap(outDir) # pickle.load(open("dbf_color_map.pkl", "rb"))
-
+    dbf_color_map['GCR1'] = 'blue'
+    dbf_color_map['RAP1'] = 'red'
+    
     info = {'config': config, 'dbf_color_map': dbf_color_map, 'optable': optable, 'tech': tech, 'longCounts': longCounts, 'shortCounts': shortCounts, 'gtffile': gtfFile}
     return info
 
@@ -104,8 +108,9 @@ def plot_nuc_dyad(ax, m2d_ax, m1d_ax, legend_ax, infos, nuc_df, chrm, start, end
     negshift = False
     for i in range(len(ax)):
         ax[i].plot(range(start-1, end), infos[i]['optable']['nuc_center'], color='grey')
-    dyads = sorted(list(filter(lambda x: x.startswith('dyad'), list(nuc_df))))
-    shifts = sorted(list(filter(lambda x: x.startswith('shift_'), list(nuc_df))))
+    dyads = sorted(list(filter(lambda x: x.startswith('dyad'), list(nuc_df)))) # [:3]
+    shifts = sorted(list(filter(lambda x: x.startswith('shift_'), list(nuc_df)))) # [:2]
+    
     nuc_df['min_dyad'] = np.nanmin(nuc_df[dyads], axis=1)
     nuc_df['max_dyad'] = np.nanmax(nuc_df[dyads], axis=1)
     nucs = nuc_df[(nuc_df['chr'] == chrm) & (nuc_df['min_dyad'] + 26 >= start - 1) & (nuc_df['max_dyad'] - 25 <= end)]
@@ -149,12 +154,16 @@ def plot_nuc_dyad(ax, m2d_ax, m1d_ax, legend_ax, infos, nuc_df, chrm, start, end
                 color = 'lightgrey'
                 issame = True
                 connectprev = True
+            '''
+            '''
             ax[d].add_patch(patches.Rectangle((r[dyad] - 25, 0), 51, 1.15, color=color, alpha=alpha, linewidth=0))
             m2d_ax[d].add_patch(patches.Rectangle((r[dyad] - 25, m2d_ax[d].get_ylim()[0]), 51, m2d_ax[d].get_ylim()[1] - m2d_ax[d].get_ylim()[0], color=color, alpha=alpha, linewidth=0))
             m1d_ax[d].add_patch(patches.Rectangle((r[dyad] - 25, 0), 51, m1d_ax[d].get_ylim()[1], color=color, alpha=alpha, linewidth=0))
             connect_m1_m2(r[dyad], m1d_ax[d], m2d_ax[d], color, alpha)
             connect_m1_m2(r[dyad], ax[d], m1d_ax[d], color, alpha)
             if connectprev: connect_prev(r[dyad], r['dyad' + prev_pos], m2d_ax[d], ax[d-1], color, alpha)
+            '''
+            '''
             prev_pos = curr_pos
             curr_pos = chr(ord(curr_pos) + 1)
 
@@ -164,7 +173,7 @@ def plot_nuc_dyad(ax, m2d_ax, m1d_ax, legend_ax, infos, nuc_df, chrm, start, end
     legend_ax.set_xlim((start, end))
     legend_ax.axis('off')
     legend_ax_t = legend_ax.twinx()
-    legend_ax_t.plot(0, 0, color='grey', label='nuc', linewidth=2)
+    legend_ax_t.plot(0, 0, color='grey', label='nuc_dyad', linewidth=2)
     if issame: legend_ax_t.scatter(0, 0, s=150, marker='^', c='lightgrey', edgecolor='grey', alpha=0.8, label='no_shift_nuc')
     if negshift: legend_ax_t.scatter(0, 0, s=150, marker='<', c='orange', edgecolor='orange', alpha=0.6, label='neg_shift_nuc < -20')
     if issame: legend_ax_t.scatter(0, 0, s=150, marker='>', c='green', edgecolor='green', alpha=0.6, label='pos_shift_nuc > 20')
@@ -199,7 +208,7 @@ def plot_tf(ax, legend_ax, top_ax, infos, tf_df, chrm, start, end, ncol_tf):
         if (minprob < 0.1 and maxprob > 0.1):
             curr_pos = 'A'
             for d in range(len(ax)):
-                ax[d].plot([(r['start'] + r['end'])//2, (r['start'] + r['end'])//2], [0, r['score' + curr_pos]], color=infos[d]['dbf_color_map'][r['TF']], linewidth=4, alpha=0.7)
+                ax[d].plot([(r['start'] + r['end'])//2, (r['start'] + r['end'])//2], [0, r['score' + curr_pos]], color=infos[d]['dbf_color_map'][r['TF']], linewidth=8, alpha=0.7)
                 curr_pos = chr(ord(curr_pos) + 1)
             
             #### ax[d].plot((r['start'] + r['end'])//2 - 1, -0.05, marker='*', clip_on=False, color=infos[d]['dbf_color_map'][r['TF']])
@@ -233,8 +242,8 @@ def plot_tf(ax, legend_ax, top_ax, infos, tf_df, chrm, start, end, ncol_tf):
     
 def plot_diff_cop(dirname, dirnames, chrm, start, end, save=True, figsize=(19, 19), ncol_tf=4, ncol_nuc=2, filename=''):
     dirname = dirname + '/' if  dirname[-1] != '/' else dirname
-    # nuc_df = nuc_map_multiple(dirnames, dirname)
-    nuc_df = nuc_map(dirnames, dirname)
+    nuc_df = nuc_map_multiple(dirnames, dirname)
+    # nuc_df = nuc_map(dirnames, dirname)
     tf_df = pandas.read_csv(dirname + 'diff_tf.csv', sep='\t')
     
     fig, ax = plt.subplots(len(dirnames)*4 + 3, 1, figsize=figsize, gridspec_kw={'height_ratios': [0.8, 0.2] + [1, 0.5, 1, 0.3] * len(dirnames) + [0.7]})
@@ -257,8 +266,10 @@ def plot_diff_cop(dirname, dirnames, chrm, start, end, save=True, figsize=(19, 1
     
     plot_1d(mnase1d_axes, infos, chrm, start, end)
     plot_2d(mnase2d_axes, infos, chrm, start, end)
+
     plot_tf(robocop_axes, legend_ax, mnase2d_axes[0], infos, tf_df, chrm, start, end, ncol_tf)
     plot_nuc_dyad(robocop_axes, mnase2d_axes, mnase1d_axes, legend_ax, infos, nuc_df, chrm, start, end, ncol_nuc)
+
     # plt.tight_layout()
     if save:
         os.makedirs(dirname + 'figures/', exist_ok = True)
