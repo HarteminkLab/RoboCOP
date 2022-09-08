@@ -50,8 +50,6 @@ def plotNuc(bamFile, nucFile, nucFrag, shortFrag):
     ax2.set_xlabel("Distance from dyad", fontsize = 20)
     ax1.invert_yaxis()
 
-    plt.savefig('./out.png')
-
 if __name__ == '__main__':
     nucFile = "/usr/xtmp/sneha/Chereji_2018/Chereji_2018_+1_-1_nucs.csv"
     bamFile = '/usr/xtmp/sneha/data/MNase-seq/MacAlpine/DM504_sacCer3_m1_2020-05-20-18-48_filtered.bam'

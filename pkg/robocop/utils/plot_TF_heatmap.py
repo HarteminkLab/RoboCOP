@@ -47,11 +47,9 @@ def plotTF(bamFile, tfFile, nucFrag, shortFrag, tf):
     ax2.set_xticks([-250, 0, 250])
     ax2.set_xticklabels([-250, 0, 250], fontsize = 12)
     ax2.set_xlim((-250, 250))
-    ax2.set_xlabel("Distance from ' + tf + ' motif center", fontsize = 20)
+    ax2.set_xlabel("Distance from " + tf + " motif center", fontsize = 20)
     ax1.invert_yaxis()
 
-    plt.savefig('./out.png')
-    
 if __name__ == '__main__':
     tfFile = "/usr/xtmp/sneha/MacIsaac/MacIsaac_sacCer3_liftOver.bed"
     tfFile = "/usr/xtmp/sneha/MacIsaac_2006/MacIsaac_p005_c1_V64_SGD.gff3"
