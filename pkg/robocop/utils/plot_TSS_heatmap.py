@@ -35,13 +35,13 @@ def getMNaseTSS(bamFile, minFrag, maxFrag, tss, offset=0):
     return counts, seqCount
 
 
-def makePlot(tssFile, bamFile, nucFrag, shortFrag):
+def plotTSS(tssFile, bamFile, nucFrag, shortFrag, offset=0):
     minFrag = 45
     maxFrag = 200
     tss = pandas.read_table(tssFile, delimiter = ',')
     tss = tss.dropna()
 
-    counts, seqCount = getMNaseTSS(bamFile, minFrag, maxFrag, tss) 
+    counts, seqCount = getMNaseTSS(bamFile, minFrag, maxFrag, tss, offset) 
     
     counts = pandas.DataFrame(counts, columns = range(-1000, 1001))
     fig = plt.figure(figsize = (25, 20))
@@ -84,4 +84,4 @@ if __name__ == '__main__':
     bamfile = '/usr/xtmp/sneha/data/MNase-seq/MacAlpine/DM504_sacCer3_m1_2020-05-20-18-48_filtered.bam'
     shortFrag = (0, 80)
     nucFrag = (127, 187)
-    makePlot(tssFile, bamfile, shortFrag, nucFrag)
+    makeTSS(tssFile, bamfile, shortFrag, nucFrag)

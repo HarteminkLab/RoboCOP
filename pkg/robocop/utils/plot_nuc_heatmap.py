@@ -27,8 +27,8 @@ def getNucCounts(filename, nucFile, offset = 0):
     return counts
 
 
-def plotNuc(bamFile, nucFile, nucFrag, shortFrag):
-    nucCounts = getNucCounts(bamFile, nucFile)
+def plotNuc(bamFile, nucFile, nucFrag, shortFrag, offset=0):
+    nucCounts = getNucCounts(bamFile, nucFile, offset)
     nucCounts = pandas.DataFrame(nucCounts, columns = range(-100, 100))
     nucCounts = nucCounts[35:201]
 

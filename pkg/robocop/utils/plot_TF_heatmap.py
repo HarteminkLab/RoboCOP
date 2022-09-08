@@ -27,8 +27,8 @@ def getTFcounts(filename, tfFile, tf, offset=0):
             counts[int(region.template_length - 2*offset), int(rMid - start)] += 1
     return counts
 
-def plotTF(bamFile, tfFile, nucFrag, shortFrag, tf):
-    tfCounts = getTFcounts(bamFile, tfFile, tf)
+def plotTF(bamFile, tfFile, nucFrag, shortFrag, tf, offset=0):
+    tfCounts = getTFcounts(bamFile, tfFile, tf, offset)
     tfCounts = pandas.DataFrame(tfCounts[:, 250:750], columns = range(-250, 250))
     tfCounts = tfCounts[35:201]
 
