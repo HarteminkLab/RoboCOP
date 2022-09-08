@@ -38,7 +38,7 @@ def getMNaseTSS(bamFile, minFrag, maxFrag, tss, offset=0):
 def plotTSS(tssFile, bamFile, nucFrag, shortFrag, offset=0):
     minFrag = 45
     maxFrag = 200
-    tss = pandas.read_table(tssFile, delimiter = ',')
+    tss = pandas.read_csv(tssFile, delimiter = '\t')
     tss = tss.dropna()
 
     counts, seqCount = getMNaseTSS(bamFile, minFrag, maxFrag, tss, offset) 
