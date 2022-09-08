@@ -8,7 +8,8 @@ import matplotlib.gridspec as gridspec
 
 # offset = 0 for MNase and offset = 4 for ATAC   
 def getNucCounts(filename, nucFile, offset = 0):
-    nucs = pandas.read_csv(nucFile, sep = "\t")
+    nucs = pandas.read_csv(nucFile, sep = "\t", header=None)
+    nucs.columns = ['chr', 'dyad', 'dyad+1']
     samfile = pysam.AlignmentFile(filename)
     counts = np.zeros((251, 200))
     for i, r in nucs.iterrows():
