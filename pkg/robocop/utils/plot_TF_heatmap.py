@@ -8,10 +8,11 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
 # offset = 0 for MNase and offset = 4 for ATAC   
-def getTFcounts(filename, tfFile, offset=0):
-    tfs = pandas.read_csv(tfFile, sep = "\t")
+def getTFcounts(filename, tfFile, tf, offset=0):
+    tfs = pandas.read_csv(tfFile, sep = "\t", header=None)
+    tfs.columns = ['chr', 'start', 'end', 'TF', '0', 'strand']
     samfile = pysam.AlignmentFile(filename)
-    tfs = tfs[tfs["Name=TF"] == "Name=ABF1"]
+    tfs = tfs[tfs["TF"] == tf]
     counts = np.zeros((201, 1000))
     for i, r in tfs.iterrows():
         mid = int(r["start"] + r["end"])/2 - 1
@@ -27,7 +28,7 @@ def getTFcounts(filename, tfFile, offset=0):
             counts[int(region.template_length - 2*offset), int(rMid - start)] += 1
     return counts
 
-def plotTF(bamFile, tfFile, nucFrag, shortFrag):
+def plotTF(bamFile, tfFile, nucFrag, shortFrag, tf):
     tfCounts = getTFcounts(bamFile, tfFile)
     tfCounts = pandas.DataFrame(tfCounts[:, 250:750], columns = range(-250, 250))
     tfCounts = tfCounts[35:201]
@@ -47,7 +48,7 @@ def plotTF(bamFile, tfFile, nucFrag, shortFrag):
     ax2.set_xticks([-250, 0, 250])
     ax2.set_xticklabels([-250, 0, 250], fontsize = 12)
     ax2.set_xlim((-250, 250))
-    ax2.set_xlabel("Distance from Abf1 motif center", fontsize = 20)
+    ax2.set_xlabel("Distance from ' + tf + ' motif center", fontsize = 20)
     ax1.invert_yaxis()
 
     plt.savefig('./out.png')
@@ -58,4 +59,4 @@ if __name__ == '__main__':
     bamFile = '/usr/xtmp/sneha/data/MNase-seq/MacAlpine/DM504_sacCer3_m1_2020-05-20-18-48_filtered.bam'
     nucFrag = (127, 187)
     shortFrag = (0, 80)
-    plotTF(bamFile, tfFile, nucFrag, shortFrag)
+    plotTF(bamFile, tfFile, nucFrag, shortFrag, tf='ABF1')
