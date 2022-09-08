@@ -1,11 +1,10 @@
-import sys
+import matplotlib
+import pysam
 import pandas
 import numpy as np
+import seaborn
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-import pysam
-import seaborn
-import math
 
 # offset = 0 for MNase and offset = 4 for ATAC   
 def getMNaseTSS(bamFile, minFrag, maxFrag, tss, offset=0):
@@ -35,7 +34,7 @@ def getMNaseTSS(bamFile, minFrag, maxFrag, tss, offset=0):
     return counts, seqCount
 
 
-def plotTSS(tssFile, bamFile, nucFrag, shortFrag, offset=0):
+def plotTSS(bamFile, tssFile, nucFrag, shortFrag, offset=0):
     minFrag = 45
     maxFrag = 200
     tss = pandas.read_csv(tssFile, sep='\t')
@@ -79,9 +78,3 @@ def plotTSS(tssFile, bamFile, nucFrag, shortFrag, offset=0):
     plt.savefig('./out.png')
 
     
-if __name__ == '__main__':
-    tssFile = '/usr/xtmp/sneha/Park_2014/supp_gkt1366_nar-02868-n-2013-File009.TSS.csv' 
-    bamfile = '/usr/xtmp/sneha/data/MNase-seq/MacAlpine/DM504_sacCer3_m1_2020-05-20-18-48_filtered.bam'
-    shortFrag = (0, 80)
-    nucFrag = (127, 187)
-    makeTSS(tssFile, bamfile, shortFrag, nucFrag)

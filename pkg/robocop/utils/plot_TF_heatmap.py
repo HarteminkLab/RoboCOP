@@ -50,10 +50,3 @@ def plotTF(bamFile, tfFile, nucFrag, shortFrag, tf, offset=0):
     ax2.set_xlabel("Distance from " + tf + " motif center", fontsize = 20)
     ax1.invert_yaxis()
 
-if __name__ == '__main__':
-    tfFile = "/usr/xtmp/sneha/MacIsaac/MacIsaac_sacCer3_liftOver.bed"
-    tfFile = "/usr/xtmp/sneha/MacIsaac_2006/MacIsaac_p005_c1_V64_SGD.gff3"
-    bamFile = '/usr/xtmp/sneha/data/MNase-seq/MacAlpine/DM504_sacCer3_m1_2020-05-20-18-48_filtered.bam'
-    nucFrag = (127, 187)
-    shortFrag = (0, 80)
-    plotTF(bamFile, tfFile, nucFrag, shortFrag, tf='ABF1')
