@@ -29,7 +29,7 @@ def getTFcounts(filename, tfFile, tf, offset=0):
     return counts
 
 def plotTF(bamFile, tfFile, nucFrag, shortFrag, tf):
-    tfCounts = getTFcounts(bamFile, tfFile)
+    tfCounts = getTFcounts(bamFile, tfFile, tf)
     tfCounts = pandas.DataFrame(tfCounts[:, 250:750], columns = range(-250, 250))
     tfCounts = tfCounts[35:201]
 
