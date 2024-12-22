@@ -3,6 +3,16 @@ from robocop.utils import concentration_probability_conversion, getNucleotides, 
 import numpy as np
 import pandas
 import os
+from scipy import sparse
+
+def save_sparse(f, k, v):
+    v = np.array(v)
+    v_sparse = sparse.csr_matrix(v)
+    g = f.create_group(k)
+    g.create_dataset('data', data=v_sparse.data)
+    g.create_dataset('indices', data=v_sparse.indices)
+    g.create_dataset('indptr', data=v_sparse.indptr)
+    g.attrs['shape'] = v_sparse.shape
 
 # read nucleotide sequence for given segments
 def getNucSequence(nucFile, tmpDir, info_file, coords, idx = None):
@@ -15,7 +25,8 @@ def getNucSequence(nucFile, tmpDir, info_file, coords, idx = None):
         else:
             g = info_file[k]
 
-        g_nucs = info_file.create_dataset(k + '/nucleotides', data = np.array(nucs))
+        # g_nucs = info_file.create_dataset(k + '/nucleotides', data = np.array(nucs))
+        save_sparse(info_file, k+'/nucleotides', v=np.array(nucs))
         return nucleotide_sequence
         
     if nucFile:
@@ -26,7 +37,8 @@ def getNucSequence(nucFile, tmpDir, info_file, coords, idx = None):
                 g = info_file.create_group(k)
             else:
                 g = info_file[k]
-            g_nucs = info_file.create_dataset(k + '/nucleotides', data = np.array(nucs))
+            # g_nucs = info_file.create_dataset(k + '/nucleotides', data = np.array(nucs))
+            save_sparse(info_file, k+'/nucleotides', v=np.array(nucs))
     else: nucleotide_sequence = None
     return nucleotide_sequence
 
@@ -89,8 +101,11 @@ def getMNase(mnaseFile, tmpDir, info_file, coords, fragRange, idx = None, tech =
             else:
                 g = info_file[k]
 
-            g_long = info_file.create_dataset(k + '/' + tech + '_long', data = np.array(longs))
-            g_short = info_file.create_dataset(k + '/' + tech + '_short', data = np.array(shorts))
+            # g_long = info_file.create_dataset(k + '/' + tech + '_long', data = np.array(longs))
+            # g_short = info_file.create_dataset(k + '/' + tech + '_short', data = np.array(shorts))
+
+            g_long = save_sparse(info_file, k+'/'+tech+'_long', v=np.array(longs))
+            g_long = save_sparse(info_file, k+'/'+tech+'_short', v=np.array(shorts))
             return mnase_data_long, mnase_data_short
 
         for i, r in coords.iterrows():
@@ -104,8 +119,10 @@ def getMNase(mnaseFile, tmpDir, info_file, coords, fragRange, idx = None, tech =
             else:
                 g = info_file[k]
 
-            g_long = info_file.create_dataset(k + '/' + tech + '_long', data = np.array(longs))
-            g_short = info_file.create_dataset(k + '/' + tech + '_short', data = np.array(shorts))
+            # g_long = info_file.create_dataset(k + '/' + tech + '_long', data = np.array(longs))
+            # g_short = info_file.create_dataset(k + '/' + tech + '_short', data = np.array(shorts))
+            g_long = save_sparse(info_file, k+'/'+tech+'_long', v=np.array(longs))
+            g_long = save_sparse(info_file, k+'/'+tech+'_short', v=np.array(shorts))
 
     return mnase_data_long, mnase_data_short
 

@@ -129,11 +129,3 @@ def plotMidpointsAx(ax, MNaseFile, chrm, minStart, maxEnd, shortFragLim, longFra
     else: ax.set_ylim(ylims)
     return countMid, countMidLong
 
-if __name__ == '__main__':
-    MNaseFile = '/usr/xtmp/sneha/Chereji_2016/H2B_Input_MNase_200U.bam'
-    chrm = 'chrI'
-    start = 60500
-    end = 65000
-    shortFragLim = (0, 80)
-    longFragLim = (127, 187)
-    plotMidpointsAx(1, MNaseFile, chrm, start, end, shortFragLim, longFragLim)

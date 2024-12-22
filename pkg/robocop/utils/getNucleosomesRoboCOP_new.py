@@ -10,8 +10,20 @@ import os
 import glob
 import h5py
 from Bio import SeqIO
+from scipy import sparse
 # from configparser import SafeConfigParser
 from configparser import ConfigParser
+
+def get_sparse(f, k):
+    g = f[k]
+    v_sparse = sparse.csr_matrix((g['data'][:],g['indices'][:], g['indptr'][:]), g.attrs['shape'])
+    return v_sparse
+
+def get_sparse_todense(f, k):
+    v_dense = np.array(get_sparse(f, k).todense())
+    if v_dense.shape[0]==1: v_dense = v_dense[0]
+    return v_dense
+
 
 # combine overlapping segments
 def getNonoverlappingSegments(coords):
@@ -66,7 +78,8 @@ def getNucScores(coords, dirname, hmmconfig, r):
             if segment_key not in f.keys(): continue
             start = int(coords.loc[i]["start"]) - r['start']
             end = int(coords.loc[i]["end"]) - r['start'] + 1
-            pTable = f[segment_key + '/posterior'][:]
+            # pTable = f[segment_key + '/posterior'][:]
+            pTable = get_sparse_todense(f, segment_key + '/posterior')
             scores[start : end] += np.sum(pTable[:, nuc_center_start:nuc_center_end], axis = 1)
             scores_occ[start:end] += np.sum(pTable[:, nuc_start:nuc_end], axis = 1)
             scores_overlap[start : end] += 1

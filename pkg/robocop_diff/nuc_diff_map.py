@@ -3,7 +3,8 @@ import pandas
 import seaborn
 import sys
 from Bio import SeqIO
-from configparser import SafeConfigParser
+# from configparser import SafeConfigParser
+from configparser import ConfigParser
 import pickle
 import math
 import pysam
@@ -233,9 +234,9 @@ def nuc_map_pair(dirname1, dirname2, outdir, outfilename = 'nuc_map.csv'):
         nuc_df = pandas.read_csv(outfile, sep = '\t')
         return nuc_df
     '''
-    config1 = SafeConfigParser()
+    config1 = ConfigParser() # SafeConfigParser()
     config1.read(configFile1)
-    config2 = SafeConfigParser()
+    config2 = ConfigParser() # SafeConfigParser()
     config2.read(configFile2)
     
     # get size of each chromosome
@@ -266,7 +267,7 @@ def nuc_map_concat(nuc_df, dirname, outdir, outfilename = 'nuc_map.csv'):
         nuc_df = pandas.read_csv(outfile, sep = '\t')
         return nuc_df
     '''
-    config = SafeConfigParser()
+    config = ConfigParser() # SafeConfigParser()
     config.read(configFile)
 
     # get size of each chromosome
@@ -422,13 +423,13 @@ def cluster_nuc_shifts(nuc_df, shift_threshold = 20):
 
     for i in range(shift_arr.shape[0]):
         if np.all(np.abs(shift_arr[i]) <= shift_threshold):
-            shift_type[i] = 'no_shift'
+            shift_type[i] = '1_no_shift'
         elif np.any(np.isnan(shift_arr[i])):
-            shift_type[i] = 'depleted'
+            shift_type[i] = '4_not_always_present'
         elif check_linear_shift(shift_arr[i], shift_threshold):
-            shift_type[i] = 'linear_shift'
+            shift_type[i] = '2_directional_shift'
         else:
-            shift_type[i] = 'nonlinear_shift'
+            shift_type[i] = '3_nondirectional_shift'
 
     nuc_df['shift_type'] = shift_type
     return nuc_df
@@ -485,12 +486,32 @@ def cluster_nucs_occ_pdyad(nuc_df, k):
     nuc_df['occ_cluster'] = predict + 1 # nuc_occ['cluster']
     return nuc_df
 
-def cluster_gene_nucs(nuc_df, outdir, plus_minus_ann_file, k):
+def cluster_gene_nucs(nuc_df, outdir, plus_minus_ann, k, shifts_wrt_first=True):
 
     if not os.path.isfile(outdir + 'nuc_df_gene_properties.csv'):
-        plus_minus_ann = pandas.read_csv(plus_minus_ann_file, sep=',')
+        # plus_minus_ann = pandas.read_csv(plus_minus_ann_file, sep=',')
         get_gene_features(nuc_df, outdir, plus_minus_ann)
     df = pandas.read_csv(outdir + 'nuc_df_gene_properties.csv', sep='\t', index_col='gene')
+
+    # make shifts with respect to first time point
+    if shifts_wrt_first:
+        df_p1 = df[df.columns[df.columns.str.startswith('p1_shift_')]]
+        # get shifts wrt 0 mins
+        p_col = ''
+        for c in df_p1.columns:
+            if p_col != '':
+                df[c] = df[c] + df[p_col]
+            p_col = c
+        
+        
+        df_m1 = df[df.columns[df.columns.str.startswith('m1_shift_')]]
+        # get shifts wrt 0 mins
+        p_col = ''
+        for c in df_m1.columns:
+            if p_col != '':
+                df[c] = df[c] + df[p_col]
+            p_col = c
+
 
     pdyad_cols = sorted(list(filter(lambda x: '_pdyad' in x, df.columns)))
 

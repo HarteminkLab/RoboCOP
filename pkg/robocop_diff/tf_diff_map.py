@@ -3,7 +3,8 @@ import pandas
 import seaborn
 import sys
 from Bio import SeqIO
-from configparser import SafeConfigParser
+from configparser import ConfigParser
+# from configparser import SafeConfigParser
 import pickle
 import math
 import pysam
@@ -197,9 +198,9 @@ def get_tf_diff_map(dirname1, dirname2, outdir):
     
     configFile1 = dirname1 + "/config.ini"
     configFile2 = dirname2 + "/config.ini"
-    config1 = SafeConfigParser()
+    config1 = ConfigParser() # SafeConfigParser()
     config1.read(configFile1)
-    config2 = SafeConfigParser()
+    config2 = ConfigParser() # SafeConfigParser()
     config2.read(configFile2)
 
     hmmconfigfile1 = config1.get("main", "trainDir") + "/HMMconfig.pkl"

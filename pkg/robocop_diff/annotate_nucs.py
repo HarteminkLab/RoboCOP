@@ -208,8 +208,8 @@ def annotate_transcript_ORF_nucs(nuc_df, plus_minus_ann, outdir):
     nuc_df.to_csv(outdir + 'nuc_diff_with_pplus_minus_ndr_orf_nucs_dyn.csv', sep='\t', index=False)
     return nuc_df
     
-def ann_nucs(nuc_df, plus_minus_file, outdir):
-    plus_minus_ann = pandas.read_csv(plus_minus_file, sep=',')
+def ann_nucs(nuc_df, plus_minus_ann, outdir):
+    # plus_minus_ann = pandas.read_csv(plus_minus_file, sep=',')
     nuc_df = annotate_plus1_minus1_nucs(nuc_df, plus_minus_ann, outdir)
     nuc_df = annotate_promoter_nucs(nuc_df, plus_minus_ann, outdir)
     nuc_df = annotate_transcript_ORF_nucs(nuc_df, plus_minus_ann, outdir)
@@ -217,13 +217,14 @@ def ann_nucs(nuc_df, plus_minus_file, outdir):
     return nuc_df
 
 
-def plot_nuc_anns(nuc_df, filename):
+def plot_nuc_anns(nuc_df, filename=''):
 
-    shift_types = pandas.Series(['no_shift' for i in range(len(nuc_df))])
-    shift_types[nuc_df['shift_type'] == 'linear_shift'] = 'directional_shift'
-    shift_types[nuc_df['shift_type'] == 'nonlinear_shift'] = 'nondirectional_shift'
-    shift_types[nuc_df['shift_type'] == 'depleted'] = 'not_always_present'
-    nuc_df['shift_type'] = shift_types
+    # shift_types = pandas.Series(['no_shift' for i in range(len(nuc_df))])
+    # shift_types[nuc_df['shift_type'] == 'linear_shift'] = 'directional_shift'
+    # shift_types[nuc_df['shift_type'] == 'nonlinear_shift'] = 'nondirectional_shift'
+    # shift_types[nuc_df['shift_type'] == 'depleted'] = 'not_always_present'
+    # nuc_df['shift_type'] = shift_types
+    ##########
 
     location = pandas.Series(['Intergenic_nuc' for i in range(len(nuc_df))])
     # location[(nuc_df['+1_nuc'].notna()) & (nuc_df['+1_nuc'].isna())] = '+1_nuc_only'
@@ -238,9 +239,9 @@ def plot_nuc_anns(nuc_df, filename):
     location[nuc_df['ORF_transcript_nuc'].notna()] = 'ORF_transcript_nuc'
     location[nuc_df['Downstream_nuc'].notna()] = 'Downstream_nuc'
     nuc_df['location'] = location
-    print("+1 only:", len(nuc_df[nuc_df['location'] == '+1_nuc_only']))
-    print("-1 only:", len(nuc_df[nuc_df['location'] == '-1_nuc_only']))
-    print("+1 -1 both:", len(nuc_df[nuc_df['location'] == '+1_-1_nuc_both']))
+    # print("+1 only:", len(nuc_df[nuc_df['location'] == '+1_nuc_only']))
+    # print("-1 only:", len(nuc_df[nuc_df['location'] == '-1_nuc_only']))
+    # print("+1 -1 both:", len(nuc_df[nuc_df['location'] == '+1_-1_nuc_both']))
     '''
     seaborn.catplot(x='occ_cluster', hue='shift_type', col='location', data=nuc_df, kind='count', sharey=False, log=True)
     plt.savefig('/usr/xtmp/sneha/tmpDir/tmp.png')
@@ -265,7 +266,8 @@ def plot_nuc_anns(nuc_df, filename):
             for s in shifts:
                 nd = nuc_df[(nuc_df['occ_cluster'] == o) & (nuc_df['shift_type'] == s)]
                 if nd.empty: continue
-                x.append('C' + str(int(o)) + '_' + s + ' (' + str(len(nd)) + ' nucs)')
+                # x.append('C' + str(int(o)) + '_' + s + ' (' + str(len(nd)) + ' nucs)')
+                x.append(o + '_' + s + ' (' + str(len(nd)) + ' nucs)')
                 y.append(len(nd[nd['location'] == nps]))
                 y_p.append(len(nd[nd['location'] == nps]) / len(nd) * 100)
                 sizes.append(len(nd))
@@ -279,20 +281,21 @@ def plot_nuc_anns(nuc_df, filename):
             y_prev = y
             y_p_prev = y_p
         else:
-            print(y_p)
-            print(y_p_prev)
+            # print(y_p)
+            # print(y_p_prev)
             ax[0].barh(x, y, left=y_prev, color=colors[npos])
             ax[1].barh(x, y_p, left=y_p_prev, color=colors[npos])
             y_prev += y
             y_p_prev += y_p
-    print(y_p_prev)
+    # print(y_p_prev)
     ax[0].set_ylabel('P(nuc)_cluster x shift_type')
     ax[0].set_xlabel('Count')
     ax[1].set_xlabel('Percentage')
     ax[0].legend(nuc_pos)
     plt.tight_layout()
-    plt.savefig(filename) # '/usr/xtmp/sneha/tmpDir/tmp.png')
-    plt.close()
+    if filename != '':
+        plt.savefig(filename) # '/usr/xtmp/sneha/tmpDir/tmp.png')
+        plt.close()
                
 
 def get_whole_genome_counts():

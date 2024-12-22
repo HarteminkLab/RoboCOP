@@ -8,6 +8,42 @@ import pickle
 from Bio import SeqIO
 import math
 import pandas
+from scipy import sparse
+
+def update_sparse_posterior(f, k, v):
+    v = np.array(v)
+    v[v < 1e-4] = 0
+    v_sparse = sparse.csr_matrix(v)
+    g = f[k+'/data'] # f.create_group(k)
+    g[...] = v_sparse.data
+    g = f[k+'/indices'] # f.create_group(k)
+    g[...] = v_sparse.indices
+    g = f[k+'/indptr'] # f.create_group(k)
+    g[...] = v_sparse.indptr
+    # g.create_dataset('data', data=v_sparse.data)
+    # g.create_dataset('indices', data=v_sparse.indices)
+    # g.create_dataset('indptr', data=v_sparse.indptr)
+    g.attrs['shape'] = v_sparse.shape
+
+def save_sparse_posterior(f, k, v):
+    v = np.array(v)
+    v[v < 1e-4] = 0
+    v_sparse = sparse.csr_matrix(v)
+    g = f.create_group(k)
+    g.create_dataset('data', data=v_sparse.data)
+    g.create_dataset('indices', data=v_sparse.indices)
+    g.create_dataset('indptr', data=v_sparse.indptr)
+    g.attrs['shape'] = v_sparse.shape
+
+def get_sparse(f, k):
+    g = f[k]
+    v_sparse = sparse.csr_matrix((g['data'][:],g['indices'][:], g['indptr'][:]), g.attrs['shape'])
+    return v_sparse
+
+def get_sparse_todense(f, k):
+    v_dense = np.array(get_sparse(f, k).todense())
+    if v_dense.shape[0]==1: v_dense = v_dense[0]
+    return v_dense
 
 def reverse_complement(pwm):
     """
@@ -31,7 +67,7 @@ def createDictionary(segment, dshared, chrm, start, end):
     d['start'] = start
     d['end'] = end
     d['n_obs'] = end - start + 1
-    build_data_emission_matrix(dshared, segment, d['n_obs'])
+    build_data_emission_matrix(d, dshared, segment, d['n_obs'])
     d['log_likelihood'] = None
     d['posterior_table'] = None
     return d
@@ -222,7 +258,7 @@ def stack_pwms(d, pwm, nuc_emission):
     _pwm_emat = np.ascontiguousarray(pwm_emat)
     d['pwm_emission'] = _pwm_emat
     
-def _build_data_emission_matrix(dshared, segment, n_obs):
+def _build_data_emission_matrix(d, dshared, segment, n_obs):
     # 3d matrix -- dim 0 is for timepoints, 
     # dim 1 denotes the multivariate emission values
     # right now it's (0) nucleotide, (1) mnase-short, (2) mnase-long, (3) atac-short (4) atac-long
@@ -232,15 +268,16 @@ def _build_data_emission_matrix(dshared, segment, n_obs):
     for t in range(dshared['timepoints']):
         data_emat = np.ones((5, n_obs, dshared['n_states']))
         if dshared['nucleotides'] is not None: update_data_emission_matrix_using_nucleotides(data_emat, dshared, segment, n_obs)
-    k = 'segment_' + str(segment) + '/emission'
-    if k not in info_file.keys():
-        g_emat = info_file.create_dataset(k, data = data_emat)
-    else:
-        g_emat = info_file[k]
-        g_emat[...] = data_emat
+    d['emission'] = data_emat
+    # k = 'segment_' + str(segment) + '/emission'
+    # if k not in info_file.keys():
+    #     g_emat = info_file.create_dataset(k, data = data_emat)
+    # else:
+    #     g_emat = info_file[k]
+    #     g_emat[...] = data_emat
         
-def build_data_emission_matrix(dshared, segment, n_obs = None):
-    _build_data_emission_matrix(dshared, segment, n_obs)
+def build_data_emission_matrix(d, dshared, segment, n_obs = None):
+    _build_data_emission_matrix(d, dshared, segment, n_obs)
 
 def update_data_emission_matrix_using_nucleotides(data_emission_matrix, dshared, segment, n_obs):
     robocopC = CDLL(dshared["robocopC"])
@@ -248,7 +285,8 @@ def update_data_emission_matrix_using_nucleotides(data_emission_matrix, dshared,
     # data_emission_matrix = d['data_emission_matrix']
     info_file = dshared['info_file']
     for t in range(dshared['timepoints']):
-        nucleotides = info_file['segment_' + str(segment) + '/nucleotides'][:] # np.load(dshared['tmpDir'] + "nucleotides.idx" + str(segment) + ".npy")
+        nucleotides = get_sparse_todense(info_file, 'segment_'+str(segment)+'/nucleotides')
+        # nucleotides = info_file['segment_' + str(segment) + '/nucleotides'][:] # np.load(dshared['tmpDir'] + "nucleotides.idx" + str(segment) + ".npy")
         data_emat = data_emission_matrix[0]
         pwm = dshared['pwm_emission']
         nucleotides = nucleotides.astype(np.long)
@@ -332,7 +370,7 @@ def update_data_emission_matrix_using_mnase_midpoint_counts_gamma(
 
 
 def update_data_emission_matrix_using_negative_binomial(
-            segment, dshared, phis, mus, data, index, timepoint):
+            d, segment, dshared, phis, mus, data, index, timepoint):
     """
     Update the data emission matrix based on the negative binomial
     distribution.
@@ -342,7 +380,8 @@ def update_data_emission_matrix_using_negative_binomial(
     data: an array of integer data_emission_matrix
     """
     info_file = dshared['info_file']
-    data_emission_matrix = info_file['segment_' + str(segment) + '/emission'][:] # d['data_emission_matrix']
+    # data_emission_matrix = info_file['segment_' + str(segment) + '/emission'][:] # d['data_emission_matrix']
+    data_emission_matrix = d['emission']
     n_obs = info_file['segment_' + str(segment)].attrs['n_obs']
     dictionary = {}
     for i in range(n_obs):
@@ -355,11 +394,12 @@ def update_data_emission_matrix_using_negative_binomial(
                 p = phis[j]/(mus[j] + phis[j])
                 dictionary[(phis[j], mus[j])][data[i]] = nbinom.pmf(data[i], phis[j], p)
             data_emission_matrix[index][i][j] *= dictionary[(phis[j], mus[j])][data[i]]
-    emat = info_file['segment_' + str(segment) + '/emission']
-    emat[...] = data_emission_matrix
+    # emat = info_file['segment_' + str(segment) + '/emission']
+    # emat[...] = data_emission_matrix
+    d['emission'] = data_emission_matrix
     
 def update_data_emission_matrix_using_mnase_midpoint_counts_onePhi(
-            segment, dshared, nuc_phi, nuc_mus, tf_phi, tf_mu, other_phi, other_mu, mnaseType, tech = "MNase"):
+            d, segment, dshared, nuc_phi, nuc_mus, tf_phi, tf_mu, other_phi, other_mu, mnaseType, tech = "MNase"):
     """
     Update data emission matrix using N.B.
     """
@@ -368,9 +408,11 @@ def update_data_emission_matrix_using_mnase_midpoint_counts_onePhi(
     k = 'segment_' + str(segment) + '/' 
     info_file = dshared['info_file']
     if mnaseType == 'short':
-        mnaseData = info_file[k + tech + '_short'][:]
+        mnaseData = get_sparse_todense(info_file, k+tech+'_short')
+        # mnaseData = info_file[k + tech + '_short'][:]
     else:
-        mnaseData = info_file[k + tech + '_long'][:]
+        mnaseData = get_sparse_todense(info_file, k+tech+'_long')
+        # mnaseData = info_file[k + tech + '_long'][:]
     phis = np.zeros(dshared['silent_states_begin'])
     mus = np.zeros(dshared['silent_states_begin'])
     phis[:] = other_phi
@@ -389,10 +431,10 @@ def update_data_emission_matrix_using_mnase_midpoint_counts_onePhi(
     assert (mus == 0).sum() == 0
     assert (phis == 0).sum() == 0
     for t in range(dshared['timepoints']):
-        if mnaseType == 'short' and tech == "MNase": update_data_emission_matrix_using_negative_binomial(segment, dshared, phis, mus, mnaseData, 1, t)
-        elif mnaseType == 'short' and tech == "ATAC": update_data_emission_matrix_using_negative_binomial(segment, dshared, phis, mus, mnaseData, 3, t)
-        elif mnaseType == 'long' and tech == "MNase": update_data_emission_matrix_using_negative_binomial(segment, dshared, phis, mus, mnaseData, 2, t)
-        elif mnaseType == 'long' and tech == "ATAC": update_data_emission_matrix_using_negative_binomial(segment, dshared, phis, mus, mnaseData, 4, t)
+        if mnaseType == 'short' and tech == "MNase": update_data_emission_matrix_using_negative_binomial(d, segment, dshared, phis, mus, mnaseData, 1, t)
+        elif mnaseType == 'short' and tech == "ATAC": update_data_emission_matrix_using_negative_binomial(d, segment, dshared, phis, mus, mnaseData, 3, t)
+        elif mnaseType == 'long' and tech == "MNase": update_data_emission_matrix_using_negative_binomial(d, segment, dshared, phis, mus, mnaseData, 2, t)
+        elif mnaseType == 'long' and tech == "ATAC": update_data_emission_matrix_using_negative_binomial(d, segment, dshared, phis, mus, mnaseData, 4, t)
 
 def set_transition(d, tf_prob, background_prob, nucleosome_prob):
     """
@@ -466,7 +508,7 @@ def set_end_probs(d):
             end_probs[d['nuc_start'] + d['nuc_len'] - 1] = 1.0
         d['end_probs'] = end_probs
 
-def posterior_forward_backward_loop(dshared, segment):
+def posterior_forward_backward_loop(d, dshared, segment):
     """
     Forward backward and posterior decoding.
     """
@@ -479,7 +521,7 @@ def posterior_forward_backward_loop(dshared, segment):
     initial_probs = dshared['initial_probs']
     end_probs = dshared['end_probs']
     transition_mat = dshared['transition_matrix']
-    data_emission_mat = info_file[k + 'emission'][:] # d['data_emission_matrix']
+    data_emission_mat = d['emission'] # info_file[k + 'emission'][:] # d['data_emission_matrix']
     fscaling_factors = np.zeros(n_obs) # d['n_obs'])
     bscaling_factors = np.zeros(n_obs)
     scaling_factors = np.zeros(n_obs)
@@ -551,17 +593,19 @@ def posterior_forward_backward_loop(dshared, segment):
 
     pos_key = k + 'posterior'
     if pos_key not in info_file.keys():
-        g_pos = info_file.create_dataset(pos_key, data = p_table)
+        # g_pos = info_file.create_dataset(pos_key, data = p_table)
+        g_pos = save_sparse_posterior(info_file, k+'posterior', p_table)
     else:
-        g_pos = info_file[pos_key]
-        g_pos[...] = p_table
+        g_pos = update_sparse_posterior(info_file, k+'posterior', p_table)
+        # g_pos = info_file[pos_key]
+        # g_pos[...] = p_table
     return log_fscaling_factor_sum_loop
 
-def posterior_forward_backward(segment, dshared):
+def posterior_forward_backward(d, segment, dshared):
     log_fscaling_factor_sum = 0
     info_file = dshared['info_file']
     for t in range(dshared['timepoints']):
-        log_fscaling_factor_sum += posterior_forward_backward_loop(dshared, segment)
+        log_fscaling_factor_sum += posterior_forward_backward_loop(d, dshared, segment)
     info_file['segment_' + str(segment)].attrs['log_likelihood'] = log_fscaling_factor_sum
 
 

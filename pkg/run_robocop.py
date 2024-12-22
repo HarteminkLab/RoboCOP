@@ -83,7 +83,11 @@ def run_robocop_without_em(coordFile, trainOutDir, outDir, idx = None, total = N
 
     # idx = int((sys.argv)[4])
     config = configparser.ConfigParser()
-    config.read(configFile)
+    read_ok = config.read(configFile)
+    print("Config sections:", config.sections(), configFile)
+    if not read_ok: 
+        print("Read failed",  idx)
+        exit(0)
     bamFile = config.get("main", "bamFile")
 
     if idx is None:

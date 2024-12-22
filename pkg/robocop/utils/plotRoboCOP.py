@@ -13,6 +13,7 @@ import random
 import glob
 import h5py
 import os
+from scipy import sparse
 import configparser
 from robocop.utils.plotMNaseMidpoints import plotMidpointsAx
 random.seed(9)
@@ -20,6 +21,16 @@ random.seed(9)
 def get_idx(chrm, start, end, coords):
     coords = coords[(coords['chr'] == chrm) & (start <= coords['end']) & (end >= coords['start'])]
     return list(coords.index)
+
+def get_sparse(f, k):
+    g = f[k]
+    v_sparse = sparse.csr_matrix((g['data'][:],g['indices'][:], g['indptr'][:]), g.attrs['shape'])
+    return v_sparse
+
+def get_sparse_todense(f, k):
+    v_dense = np.array(get_sparse(f, k).todense())
+    if v_dense.shape[0]==1: v_dense = v_dense[0]
+    return v_dense
 
 def calc_posterior(allinfofiles, dshared, coords, chrm, start, end):
     idxs = get_idx(chrm, start, end, coords)
@@ -36,9 +47,9 @@ def calc_posterior(allinfofiles, dshared, coords, chrm, start, end):
                 f.close()
                 continue
             dshared['info_file'] = f
-            dp = f[k + '/posterior'][:]
-            lc = f[k + '/MNase_long'][:]
-            sc = f[k + '/MNase_short'][:]
+            dp = get_sparse_todense(f, k+'/posterior') # f[k + '/posterior'][:]
+            lc = get_sparse_todense(f, k+'/MNase_long') # f[k + '/MNase_long'][:]
+            sc = get_sparse_todense(f, k+'/MNase_short') # f[k + '/MNase_short'][:]
             f.close()
             dp_start = max(0, start - coords.loc[idx]['start'])
             dp_end = min(end - coords.loc[idx]['start'] + 1, coords.loc[idx]['end'] - coords.loc[idx]['start'] + 1)
@@ -51,7 +62,7 @@ def calc_posterior(allinfofiles, dshared, coords, chrm, start, end):
 
     if counts[counts > 0].shape != counts.shape:
         print("ERROR: Invalid coordinates " + chrm + ":" + str(start) + "-" + str(end))
-        print("Valid coordinates can be found at " + outDir + "coords.tsv")
+        print("Valid coordinates can be found at coords.tsv")
         exit(0)
     ptable = ptable / counts[:, np.newaxis]
     longCounts = longCounts / counts

@@ -7,14 +7,15 @@ import pandas
 import seaborn
 import sys
 from Bio import SeqIO
-from configparser import SafeConfigParser
+from configparser import ConfigParser
+# from configparser import SafeConfigParser
 import glob
 import pickle
 import math
 import pysam
 import os
 import re
-from robocop_diff.multiple_nuc_alignment import nuc_map
+# from robocop_diff.multiple_nuc_alignment import nuc_map
 from robocop_diff.nuc_diff_map import nuc_map_multiple
 from robocop.utils.plotRoboCOP import calc_posterior, colorMap, plotRegion
 from robocop.utils.plotMNaseMidpoints import plotMidpointsAx, plotMidpointsDensityAx
@@ -22,7 +23,7 @@ from robocop.utils.plotMNaseMidpoints import plotMidpointsAx, plotMidpointsDensi
 def get_info_robocop(outDir, chrm, start, end):
     outDir = outDir + '/' if outDir[-1] != '/' else outDir
     configFile = outDir + "/config.ini"
-    config = SafeConfigParser()
+    config = ConfigParser() # SafeConfigParser()
     config.read(configFile)
     
     # hmmconfigfile is generated only with robocop_em.py
@@ -184,7 +185,7 @@ def plot_nuc_dyad(ax, m2d_ax, m1d_ax, legend_ax, infos, nuc_df, chrm, start, end
     
 def plot_tf(ax, legend_ax, top_ax, infos, tf_df, chrm, start, end, ncol_tf):
     scores = sorted(list(filter(lambda x: x.startswith('score'), list(tf_df))))
-    t_df = tf_df[(tf_df['chr'] == chrm) & (tf_df['start'] < end) & (tf_df['end'] >= start) & (np.any(tf_df[scores] > 0.1, axis=1))]
+    t_df = tf_df[(tf_df['chr'] == chrm) & (tf_df['start'] < end) & (tf_df['end'] >= start) & (np.any(tf_df[scores] > 0.1, axis=1))].fillna(0)
     if t_df.empty: return
     dbfs = sorted(list(set(t_df['TF'])))
     
@@ -204,7 +205,6 @@ def plot_tf(ax, legend_ax, top_ax, infos, tf_df, chrm, start, end, ncol_tf):
 
             curr_pos = chr(ord(curr_pos) + 1)
 
-        # if ((maxprob - minprob > 0.3) or (minprob < 0.1 and maxprob > 0.1)):
         if (minprob < 0.1 and maxprob > 0.1):
             curr_pos = 'A'
             for d in range(len(ax)):
@@ -243,7 +243,6 @@ def plot_tf(ax, legend_ax, top_ax, infos, tf_df, chrm, start, end, ncol_tf):
 def plot_diff_cop(dirname, dirnames, chrm, start, end, save=True, figsize=(19, 19), ncol_tf=4, ncol_nuc=2, filename=''):
     dirname = dirname + '/' if  dirname[-1] != '/' else dirname
     nuc_df = nuc_map_multiple(dirnames, dirname)
-    # nuc_df = nuc_map(dirnames, dirname)
     tf_df = pandas.read_csv(dirname + 'diff_tf.csv', sep='\t')
     
     fig, ax = plt.subplots(len(dirnames)*4 + 3, 1, figsize=figsize, gridspec_kw={'height_ratios': [0.8, 0.2] + [1, 0.5, 1, 0.3] * len(dirnames) + [0.7]})

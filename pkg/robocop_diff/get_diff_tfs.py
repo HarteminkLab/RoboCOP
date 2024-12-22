@@ -1,25 +1,57 @@
-
 import matplotlib.pyplot as plt
 import seaborn
 import pandas
 import numpy as np
 import h5py
 import os
+from scipy import sparse
 import pickle
-from configparser import SafeConfigParser
+from configparser import ConfigParser
+# from configparser import SafeConfigParser
 import scipy.stats as st
 
-def get_sites(dirnames, tf):
-    if os.path.isfile('/usr/xtmp/sneha/tmpDir/diff_tf_' + tf + '.csv'):
-        tf_sites = pandas.read_csv('/usr/xtmp/sneha/tmpDir/diff_tf_' + tf + '.csv', sep='\t')
+def get_sparse(f, k):
+    g = f[k]
+    v_sparse = sparse.csr_matrix((g['data'][:],g['indices'][:], g['indptr'][:]), g.attrs['shape'])
+    return v_sparse
+
+def get_sparse_todense(f, k):
+    v_dense = np.array(get_sparse(f, k).todense())
+    if v_dense.shape[0]==1: v_dense = v_dense[0]
+    return v_dense
+
+
+def get_sparse_tf_scores_df(filename):
+    f = h5py.File(filename, 'r')
+    chrs = f.keys()
+    dfs = []
+    for c in chrs:
+        scores = get_sparse_todense(f, c + '/score')
+        df_c = pandas.DataFrame(columns=['chr', 'start', 'end', 'width', 'score'])
+        df_c['score'] = scores
+        df_c['chr'] = c
+        df_c['start'] = f[c+'/start'][:]
+        # df_c['start'] = np.arange(1, scores.shape[0]+1).astype(int)
+        df_c['width'] = f[c].attrs['width']
+        df_c['end'] = df_c['start'] + df_c['width']
+        dfs.append(df_c)
+
+    df = pandas.concat(dfs, ignore_index=True)
+    return df
+
+def get_sites(dirnames, outdir, tf):
+    if os.path.isfile(outdir + '/tmpDir/diff_tf_' + tf + '.csv'):
+        tf_sites = pandas.read_csv(outdir + '/tmpDir/diff_tf_' + tf + '.csv', sep='\t')
         return tf_sites
     curr_pos = 'A'
     score_cols = []
     for d in dirnames:
-        tf_d = pandas.read_hdf(d + '/RoboCOP_outputs/' + tf + '.h5', mode='r', key='df')
+        # tf_d = pandas.read_hdf(d + '/RoboCOP_outputs/' + tf + '.h5', mode='r', key='df')
+        tf_d = get_sparse_tf_scores_df(d + '/RoboCOP_outputs/' + tf + '.h5')
         print(list(tf_d))
         tf_d = tf_d.rename(columns={'score': 'score' + curr_pos})
-        tf_d = tf_d.drop(columns=['index', 'width'])
+        # tf_d = tf_d.drop(columns=['index', 'width'])
+        tf_d = tf_d.drop(columns=['width'])
         score_cols.append('score' + curr_pos)
         if curr_pos == 'A':
             tf_sites = tf_d
@@ -29,13 +61,14 @@ def get_sites(dirnames, tf):
 
     # tf_sites = tf_sites[~np.all(tf_sites[score_cols] > 0.1, axis=1)]
     tf_sites = tf_sites[np.any(tf_sites[score_cols] > 0.1, axis=1)]
+    print("tf sites > 0.1:")
+    print(tf_sites['start'].max(), tf_sites['end'].max())
     tf_sites['TF'] = [tf for _ in range(len(tf_sites))]
-    print(tf_sites)
-    tf_sites.to_csv('/usr/xtmp/sneha/tmpDir/diff_tf_' + tf + '.csv', sep='\t', index=False)
+    tf_sites.to_csv(outdir+'/tmpDir/diff_tf_' + tf + '.csv', sep='\t', index=False)
     return tf_sites
 
 def get_tf_sites(dirnames):
-    config = SafeConfigParser()
+    config = ConfigParser() # SafeConfigParser()
     config.read(dirnames[0] + '/config.ini')
     hmmconfigfile = config.get("main", "trainDir") + "/HMMconfig.pkl"
     hmmconfig = pickle.load(open(hmmconfigfile, "rb"), encoding = "latin1")
@@ -52,11 +85,13 @@ def get_tf_sites(dirnames):
 
 def get_tf_diff(dirnames, outdir):
     outdir = outdir + '/' if outdir[-1] != '/' else outdir 
+    os.makedirs(outdir + 'tmpDir/', exist_ok=True)
     if os.path.isfile(outdir + 'diff_tf.csv'):
         all_tf_sites = pandas.read_csv(outdir + 'diff_tf.csv', sep='\t')
         return all_tf_sites
     
-    config = SafeConfigParser()
+    # config = SafeConfigParser()
+    config = ConfigParser()
     config.read(dirnames[0] + '/config.ini')
     hmmconfigfile = config.get("main", "trainDir") + "/HMMconfig.pkl"
     hmmconfig = pickle.load(open(hmmconfigfile, "rb"), encoding = "latin1")
@@ -66,10 +101,12 @@ def get_tf_diff(dirnames, outdir):
     tfs = list(set(tfs))
     tfs = list(filter(lambda x: x != "UNKNOWN" and x != "BACKGROUND", tfs))
     flag = 0
-    
+    tf_counter = 0
     for tf in tfs:
+        tf_counter += 1
+        print("TF iter:", tf_counter)
         print(tf)
-        tf_sites = get_sites(dirnames, tf)
+        tf_sites = get_sites(dirnames, outdir, tf)
         if flag == 0:
             all_tf_sites = tf_sites
             flag = 1
@@ -100,9 +137,9 @@ def get_tf_gene_promoter(dirnames, outdir, plus_minus_ann):
     all_tf_sites['gene'] = genes
     return all_tf_sites
     
-def get_tf_clusters(gene_df, dirnames, outdir, plus_minus_ann_file):
+def get_tf_clusters(gene_df, dirnames, outdir, plus_minus_ann):
 
-    plus_minus_ann = pandas.read_csv(plus_minus_ann_file, sep=',')
+    # plus_minus_ann = pandas.read_csv(plus_minus_ann_file, sep=',')
     tf_sites = get_tf_gene_promoter(dirnames, outdir, plus_minus_ann) 
     tf_in_genes = pandas.DataFrame(columns=['TF', 'cluster', 'cluster_size', 'n_tf_genes'])
     tf_sites = tf_sites[~tf_sites['gene'].isna()]
@@ -144,9 +181,9 @@ def mean_confidence_interval(data, confidence=0.95):
     h = se * st.t.ppf((1 + confidence) / 2., n-1)
     return m, m-h, m+h
 
-def plot_tf_diff(gene_df, dirnames, outdir):
+def plot_tf_diff(gene_df, dirnames, plus_minus_ann, outdir, k):
     tfs = ['REB1', 'STP4', 'SWI4', 'RAP1', 'PBF1', 'PBF2', 'STP1', 'DAL82', 'RIM101', 'MET31', 'RTG3', 'SFL1', 'YPR196W', 'GAL4', 'GCR1', 'YKL222C', 'ABF1', 'ASG1', 'YBG033W']
-    tf_sites = get_tf_gene_promoter(dirnames, outdir) # pandas.read_csv('/usr/xtmp/sneha/tmpDir/all_diff_tfs_genes_subset.csv', sep='\t')
+    tf_sites = get_tf_gene_promoter(dirnames, outdir, plus_minus_ann) # pandas.read_csv('/usr/xtmp/sneha/tmpDir/all_diff_tfs_genes_subset.csv', sep='\t')
     tf_in_genes = pandas.DataFrame(columns=['TF', 'cluster', 'cluster_size', 'n_tf_genes'])
     tf_sites = tf_sites[~tf_sites['gene'].isna()]
     tf_sites['gene'] = tf_sites['gene'].str.split(',')
@@ -222,7 +259,7 @@ def plot_tf_diff(gene_df, dirnames, outdir):
     ax[0].axvline(q1, ls='--', color='red')
     ax[0].axvline(q3, ls='--', color='red')
 
-    for c in range(8):
+    for c in range(k):
         arr = tf_sites[tf_sites['cluster']==c][['score_diff_B', 'score_diff_C', 'score_diff_D', 'score_diff_E']].values
         arr = np.ravel(arr)
         arr = arr[~np.isnan(arr)]
@@ -230,7 +267,8 @@ def plot_tf_diff(gene_df, dirnames, outdir):
     ax[1].legend()
     ax[0].set_title('All differences')
     ax[1].set_title('Cluster specific differences')
-    plt.savefig('/usr/xtmp/sneha/tmpDir/tmp.pdf')
+    # plt.savefig('/usr/xtmp/sneha/tmpDir/tmp.pdf')
+    plt.show()
     plt.close()
     # exit(0)
     
@@ -245,14 +283,18 @@ def plot_tf_diff(gene_df, dirnames, outdir):
     print(h_df_B)
 
     seaborn.clustermap(h_df_B.fillna(0), xticklabels=1, yticklabels=1, cmap='bwr', figsize=(10, 20), col_cluster=False, vmin=-0.4, vmax=0.4)
-    plt.savefig('/usr/xtmp/sneha/tmpDir/tmp_B.png')
+    # plt.savefig('/usr/xtmp/sneha/tmpDir/tmp_B.png')
+    plt.show()
     plt.close()
     seaborn.clustermap(h_df_C.fillna(0), xticklabels=1, yticklabels=1, cmap='bwr', figsize=(10, 20), col_cluster=False, vmin=-0.4, vmax=0.4)
-    plt.savefig('/usr/xtmp/sneha/tmpDir/tmp_C.png')
+    # plt.savefig('/usr/xtmp/sneha/tmpDir/tmp_C.png')
+    plt.show()
     plt.close()
     seaborn.clustermap(h_df_D.fillna(0), xticklabels=1, yticklabels=1, cmap='bwr', figsize=(10, 20), col_cluster=False, vmin=-0.4, vmax=0.4)
-    plt.savefig('/usr/xtmp/sneha/tmpDir/tmp_D.png')
+    # plt.savefig('/usr/xtmp/sneha/tmpDir/tmp_D.png')
+    plt.show()
     plt.close()
     seaborn.clustermap(h_df_E.fillna(0), xticklabels=1, yticklabels=1, cmap='bwr', figsize=(10, 20), col_cluster=False, vmin=-0.4, vmax=0.4)
-    plt.savefig('/usr/xtmp/sneha/tmpDir/tmp_E.png')
+    # plt.savefig('/usr/xtmp/sneha/tmpDir/tmp_E.png')
+    plt.show()
     plt.close()

@@ -1,1 +1,4 @@
 gcc -g -fPIC -Wall -Wextra -pedantic bc.c algo.c -shared -o librobocop.so
+
+## on mac
+## gcc $(gsl-config --cflags) -g -fPIC -Wall -Wextra -pedantic bc.c algo.c -shared $(gsl-config --libs) -o librobocop.so
