@@ -62,4 +62,4 @@ in a
 jupyter notebook format in the [analysis](https://github.com/HarteminkLab/RoboCOP/tree/master/analysis) directory.
 
 Vignette describing how to run DynaCOP can be found [here](https://github.com/HarteminkLab/RoboCOP/blob/master/analysis/example_dynacop.ipynb) in a jupyter
-notebook format in the [analysis](https://github.com/HarteminkLab/RoboCOP/tree/master/analysis) directory.
+notebook format in the [analysis](https://github.com/HarteminkLab/RoboCOP/tree/master/analysis) directory. The figures from the paper can be generated using [dynacop_figures.ipynb](https://github.com/HarteminkLab/RoboCOP/blob/master/dynacop_figures.ipynb).
